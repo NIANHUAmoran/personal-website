@@ -1,0 +1,23 @@
+---
+import type { Project } from '../data/projects';
+import { formatDate } from '../lib/date';
+
+interface Props {
+  project: Project;
+}
+
+const { project } = Astro.props;
+const external = project.linkType !== 'internal';
+---
+
+<article class="entry-card">
+  <h3>
+    <a href={project.href} target={external ? '_blank' : undefined} rel={external ? 'noreferrer' : undefined}>
+      {project.title}
+    </a>
+  </h3>
+  <p>{project.description}</p>
+  {project.pubDate && (
+    <time datetime={project.pubDate}>发布于 {formatDate(new Date(project.pubDate))}</time>
+  )}
+</article>

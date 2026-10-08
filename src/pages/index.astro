@@ -1,0 +1,90 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import BlogCard from '../components/BlogCard.astro';
+import ColumnCard from '../components/ColumnCard.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import { siteConfig } from '../config';
+import { columns } from '../data/columns';
+import { projects } from '../data/projects';
+import { getPublishedPosts } from '../lib/content';
+
+const recentPosts = (await getPublishedPosts()).slice(0, 4);
+const featuredColumns = columns.filter((column) => column.featured);
+const featuredProjects = projects.filter((project) => project.featured);
+---
+
+<BaseLayout>
+  <section class="hero" aria-labelledby="hero-title">
+    <img
+      class="hero-artwork"
+      src={siteConfig.heroImage}
+      alt={siteConfig.heroImageAlt}
+      width="1344"
+      height="896"
+      fetchpriority="high"
+    />
+    <div class="hero-shade" aria-hidden="true"></div>
+    <div class="hero-inner page-width">
+      <div class="hero-copy">
+        <p class="eyebrow">Personal publication · Since 2026</p>
+        <h1 id="hero-title">{siteConfig.author}</h1>
+        <p class="hero-intro">{siteConfig.heroIntro}</p>
+        <div class="hero-meta" aria-label="作者信息">
+          <span>{siteConfig.role}</span>
+          <span>{siteConfig.heroLine}</span>
+        </div>
+        <div class="hero-actions">
+          <a class="button" href="/blog/">开始阅读 <span aria-hidden="true">→</span></a>
+          <a class="text-link" href="/about/">关于作者</a>
+        </div>
+      </div>
+      <a class="hero-scroll" href="#writing-title">向下阅读 <span aria-hidden="true">↓</span></a>
+    </div>
+  </section>
+
+  <div class="home-layout page-width">
+    <section class="home-section" aria-labelledby="writing-title">
+      <div class="section-heading">
+        <div>
+          <p class="section-number">01 / WRITING</p>
+          <h2 id="writing-title">最近写作</h2>
+        </div>
+        <a class="text-link section-link" href="/blog/">全部文章 <span aria-hidden="true">→</span></a>
+      </div>
+      <div class="writing-list">
+        {recentPosts.map((post) => <BlogCard post={post} />)}
+      </div>
+    </section>
+
+    <section class="home-section" aria-labelledby="columns-title">
+      <div class="section-heading">
+        <div>
+          <p class="section-number">02 / COLUMNS</p>
+          <h2 id="columns-title">专栏</h2>
+        </div>
+        <a class="text-link section-link" href="/columns/">全部专栏 <span aria-hidden="true">→</span></a>
+      </div>
+      <div class="entry-list">
+        {featuredColumns.map((column) => <ColumnCard column={column} />)}
+      </div>
+    </section>
+
+    <section class="home-section" aria-labelledby="projects-title">
+      <div class="section-heading">
+        <div>
+          <p class="section-number">03 / PROJECTS</p>
+          <h2 id="projects-title">精选项目</h2>
+        </div>
+        <a class="text-link section-link" href="/projects/">全部项目 <span aria-hidden="true">→</span></a>
+      </div>
+      <div class="entry-list">
+        {featuredProjects.map((project) => <ProjectCard project={project} />)}
+      </div>
+    </section>
+
+    <section class="closing-note" aria-label="站点结语">
+      <p class="section-number">04 / A NOTE</p>
+      <p>写下来的东西，才有机会被重新看见；做出来的东西，才真正开始与世界相遇。</p>
+    </section>
+  </div>
+</BaseLayout>

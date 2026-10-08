@@ -1,0 +1,19 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import { projects } from '../data/projects';
+---
+
+<BaseLayout title="项目" description="独立网页、历史可视化与 AI 实验项目。">
+  <header class="page-intro page-width">
+    <p class="eyebrow">Selected Works</p>
+    <h1>项目</h1>
+    <p>这里收集独立网页、可视化实验和一些可运行的想法。它们可以来自主站，也可以完全独立生长。</p>
+  </header>
+
+  <section class="page-width list-section" aria-label="全部项目">
+    <div class="entry-list">
+      {projects.map((project) => <ProjectCard project={project} />)}
+    </div>
+  </section>
+</BaseLayout>

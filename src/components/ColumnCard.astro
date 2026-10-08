@@ -1,0 +1,14 @@
+---
+import type { Column } from '../data/columns';
+
+interface Props {
+  column: Column;
+}
+
+const { column } = Astro.props;
+---
+
+<article class="entry-card">
+  <h3><a href={column.href}>{column.title}</a></h3>
+  <p>{column.description}</p>
+</article>

@@ -1,0 +1,69 @@
+---
+import type { Column } from '../../data/columns';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import BlogCard from '../../components/BlogCard.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import { columns } from '../../data/columns';
+import { projects } from '../../data/projects';
+import { getPublishedPosts } from '../../lib/content';
+
+export function getStaticPaths() {
+  return columns.map((column) => ({
+    params: { slug: column.slug },
+    props: { column },
+  }));
+}
+
+interface Props {
+  column: Column;
+}
+
+const { column } = Astro.props;
+const columnProjects = projects.filter((project) => project.column === column.slug);
+const columnPosts = (await getPublishedPosts()).filter(
+  (post) => post.data.column === column.slug,
+);
+---
+
+<BaseLayout title={column.title} description={column.description} canonicalPath={column.href}>
+  <header class="column-hero page-width">
+    <a class="back-link" href="/columns/">← 返回全部专栏</a>
+    <div class="column-hero-copy">
+      <p class="eyebrow">Column</p>
+      <h1>{column.title}</h1>
+      <p>{column.description}</p>
+    </div>
+  </header>
+
+  <section class="column-section page-width" aria-labelledby="column-projects-title">
+    <div class="section-heading">
+      <div>
+        <p class="section-number">01 / PROJECTS</p>
+        <h2 id="column-projects-title">相关项目</h2>
+      </div>
+    </div>
+    {columnProjects.length > 0 ? (
+      <div class="entry-list">
+        {columnProjects.map((project) => <ProjectCard project={project} />)}
+      </div>
+    ) : (
+      <p class="empty-state">这个专栏暂时还没有项目。</p>
+    )}
+  </section>
+
+  <section class="column-section page-width" aria-labelledby="column-writing-title">
+    <div class="section-heading">
+      <div>
+        <p class="section-number">02 / WRITING</p>
+        <h2 id="column-writing-title">相关文章</h2>
+      </div>
+    </div>
+    {columnPosts.length > 0 ? (
+      <div class="writing-list">
+        {columnPosts.map((post) => <BlogCard post={post} />)}
+      </div>
+    ) : (
+      <p class="empty-state">这个专栏暂时还没有文章。</p>
+    )}
+  </section>
+</BaseLayout>

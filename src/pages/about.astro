@@ -1,0 +1,43 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProfileCard from '../components/ProfileCard.astro';
+import { siteConfig } from '../config';
+---
+
+<BaseLayout title="关于" description="关于向雪怀川，一名独立开发者。">
+  <header class="about-hero page-width">
+    <div class="about-hero-copy">
+      <p class="eyebrow">About</p>
+      <h1>关于我</h1>
+      <p>独立开发者，记录技术、阅读、生活与那些值得停驻片刻的念头。</p>
+    </div>
+    <ProfileCard />
+  </header>
+
+  <div class="about-layout page-width">
+    <div class="about-content prose">
+      <section>
+        <h2>About Me</h2>
+        <p>你好，我是向雪怀川，一名独立开发者。这里是我的个人网站，写技术，也写阅读与生活，偶尔记下山水风雪、灯火书卷，以及那些值得停驻片刻的念头。</p>
+        <p>愿在漫长岁月里，心中有山水，眼底有微光，案头有书，身边有生活；慢慢成为一个内心丰盈的人，也走过一段真正有生命质感的人生。</p>
+      </section>
+
+      <section>
+        <h2>Research / Interests</h2>
+        <ul>
+          <li><strong>问技：</strong>人工智能、推荐系统与智能体</li>
+          <li><strong>问史：</strong>历史资料整理</li>
+          <li><strong>问心：</strong>阅读、思考与自我生长</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Contact</h2>
+        <p>
+          Email：<a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a><br />
+          GitHub：<a href={siteConfig.github} target="_blank" rel="noreferrer">NIANHUAmoran ↗</a>
+        </p>
+      </section>
+    </div>
+  </div>
+</BaseLayout>

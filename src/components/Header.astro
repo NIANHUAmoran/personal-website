@@ -1,0 +1,62 @@
+---
+import { navigation, siteConfig } from '../config';
+
+const currentPath = Astro.url.pathname;
+const isActive = (href: string) =>
+  href === '/' ? currentPath === '/' : currentPath.startsWith(href);
+---
+
+<header class="site-header">
+  <div class="header-inner">
+    <a class="site-mark" href="/" aria-label={`${siteConfig.siteName} 首页`}>
+      <span class="site-mark-name">{siteConfig.author}</span>
+      <span class="site-mark-note">Personal publication</span>
+    </a>
+
+    <nav aria-label="主导航">
+      <ul class="nav-list">
+        {navigation.map((item) => (
+          <li>
+            <a href={item.href} aria-current={isActive(item.href) ? 'page' : undefined}>
+              {item.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    <div class="header-actions">
+      <a class="github-link" href={siteConfig.github} target="_blank" rel="noreferrer">
+        <span class="github-label">GitHub</span><span aria-hidden="true">↗</span>
+      </a>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="切换深色模式">
+        <span data-theme-icon aria-hidden="true">☾</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<script is:inline>
+  (() => {
+    const toggle = document.querySelector('[data-theme-toggle]');
+    if (!(toggle instanceof HTMLButtonElement)) return;
+
+    const icon = toggle.querySelector('[data-theme-icon]');
+    const syncToggle = () => {
+      const isDark = document.documentElement.dataset.theme === 'dark';
+      if (icon) icon.textContent = isDark ? '☀' : '☾';
+      toggle.setAttribute('aria-label', isDark ? '切换浅色模式' : '切换深色模式');
+      toggle.setAttribute('aria-pressed', String(isDark));
+    };
+
+    syncToggle();
+    toggle.addEventListener('click', () => {
+      const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+      document.documentElement.dataset.theme = nextTheme;
+      try {
+        localStorage.setItem('site-theme', nextTheme);
+      } catch {}
+      syncToggle();
+    });
+  })();
+</script>

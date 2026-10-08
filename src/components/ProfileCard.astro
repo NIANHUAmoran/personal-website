@@ -1,0 +1,31 @@
+---
+import { siteConfig } from '../config';
+---
+
+<aside class="profile-card" aria-label="个人资料">
+  <div class="profile-avatar-frame">
+    <img
+      class="profile-avatar"
+      src={siteConfig.avatar}
+      alt={`${siteConfig.author}的头像`}
+      width="1179"
+      height="1179"
+    />
+    <span class="profile-status" aria-hidden="true"></span>
+  </div>
+
+  <p class="profile-name">{siteConfig.author}</p>
+  <p class="profile-role">{siteConfig.role}</p>
+  <p class="profile-summary">{siteConfig.profileSummary}</p>
+
+  <ul class="profile-topics" aria-label="关注方向">
+    <li>问技</li>
+    <li>问史</li>
+    <li>问心</li>
+  </ul>
+
+  <div class="profile-links">
+    <a href={siteConfig.github} target="_blank" rel="noreferrer">GitHub ↗</a>
+    <a href={`mailto:${siteConfig.email}`}>Email</a>
+  </div>
+</aside>

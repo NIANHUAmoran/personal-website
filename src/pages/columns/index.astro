@@ -1,0 +1,19 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ColumnCard from '../../components/ColumnCard.astro';
+import { columns } from '../../data/columns';
+---
+
+<BaseLayout title="专栏" description="按长期主题组织文章、项目与持续积累的内容。">
+  <header class="page-intro page-width">
+    <p class="eyebrow">Columns</p>
+    <h1>专栏</h1>
+    <p>专栏不是文章或项目的另一种形式，而是将不同内容放进同一主题脉络中的长期索引。</p>
+  </header>
+
+  <section class="page-width list-section" aria-label="全部专栏">
+    <div class="entry-list">
+      {columns.map((column) => <ColumnCard column={column} />)}
+    </div>
+  </section>
+</BaseLayout>

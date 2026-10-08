@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 560" role="img" aria-labelledby="title desc">
+  <title id="title">文字、时间与作品</title>
+  <desc id="desc">米色纸张上，由线条、圆点与中文字符组成的抽象图形。</desc>
+  <rect width="1200" height="560" fill="#ede6d8"/>
+  <g fill="none" stroke="#b9ad9b" stroke-width="2">
+    <path d="M104 394C286 158 462 476 648 226S958 162 1090 316"/>
+    <path d="M104 430H1090" opacity=".5"/>
+    <circle cx="272" cy="284" r="76"/>
+    <circle cx="842" cy="243" r="122"/>
+  </g>
+  <g fill="#8f2f2a">
+    <circle cx="272" cy="284" r="9"/>
+    <circle cx="648" cy="226" r="9"/>
+    <circle cx="998" cy="260" r="9"/>
+  </g>
+  <g fill="#292723" font-family="serif">
+    <text x="112" y="116" font-size="28" letter-spacing="8">NOTES · TIME · WORKS</text>
+    <text x="775" y="322" font-size="102">记</text>
+  </g>
+</svg>

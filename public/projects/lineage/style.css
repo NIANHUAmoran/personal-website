@@ -1,0 +1,210 @@
+@font-face {
+  font-family: "Clear Han Serif";
+  src: url("/fonts/clearhanserif.subset.v1.10.standard.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: light;
+  --paper: #f3efe7;
+  --ink: #1d211d;
+  --muted: #70736c;
+  --line: #cbc6ba;
+  --accent: #285b43;
+  --signal: #d56b37;
+  --site-font: "Clear Han Serif", "Songti SC", STSong, SimSun, serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 18rem;
+  background: var(--paper);
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  color: var(--ink);
+  background: var(--paper);
+  font-family: var(--site-font);
+  font-size: 1rem;
+  line-height: 1.75;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+body::before {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  content: "";
+  opacity: 0.18;
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent 0,
+    transparent 3px,
+    color-mix(in srgb, var(--ink) 3%, transparent) 4px
+  );
+}
+
+a {
+  color: inherit;
+  text-decoration-thickness: 0.06em;
+  text-underline-offset: 0.22em;
+}
+
+a:hover {
+  color: var(--accent);
+}
+
+a:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 4px;
+}
+
+.folio {
+  width: min(calc(100% - 3rem), 70rem);
+  margin-inline: auto;
+  padding-bottom: clamp(4rem, 8vw, 7rem);
+}
+
+.project-header {
+  padding-block: 2rem clamp(2.5rem, 4vw, 3.5rem);
+  border-bottom: 1px solid var(--ink);
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: clamp(3.5rem, 6vw, 5rem);
+  font-size: 0.76rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-decoration-color: var(--line);
+}
+
+.kicker {
+  margin: 0;
+  color: var(--accent);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+
+h1,
+h2 {
+  color: var(--ink);
+  font-weight: 400;
+}
+
+h1 {
+  margin: 0.5rem 0 0;
+  font-size: clamp(1.875rem, 3vw, 2.5rem);
+  line-height: 1.2;
+}
+
+.introduction {
+  max-width: 46rem;
+  margin: 1.5rem 0 0;
+  color: var(--muted);
+  font-size: clamp(1rem, 1.4vw, 1.1rem);
+}
+
+.lineage-index {
+  padding-block: clamp(3rem, 6vw, 4.5rem);
+}
+
+.section-heading {
+  margin-bottom: clamp(1.75rem, 4vw, 2.75rem);
+}
+
+h2 {
+  margin: 0.3rem 0 0;
+  font-size: clamp(1.375rem, 2vw, 1.75rem);
+  line-height: 1.35;
+}
+
+.entry-list {
+  border-top: 1px solid var(--line);
+}
+
+.lineage-entry {
+  display: block;
+  padding: 1.5rem 0 1.7rem;
+  border-bottom: 1px solid var(--line);
+  text-decoration: none;
+}
+
+.entry-label {
+  display: block;
+  color: var(--muted);
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+}
+
+.entry-title {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: clamp(1.1rem, 1.7vw, 1.25rem);
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.entry-arrow {
+  margin-left: 0.2rem;
+  color: var(--accent);
+  font-size: 0.85em;
+}
+
+.entry-description {
+  display: block;
+  max-width: 43rem;
+  margin-top: 0.5rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+footer {
+  padding-top: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  color: var(--muted);
+  border-top: 1px solid var(--ink);
+  font-size: 0.72rem;
+}
+
+footer a {
+  text-decoration-color: var(--line);
+}
+
+@media (max-width: 42rem) {
+  .folio {
+    width: min(calc(100% - 2.25rem), 70rem);
+  }
+
+  .back-link {
+    margin-bottom: 3rem;
+  }
+
+  footer {
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
+}

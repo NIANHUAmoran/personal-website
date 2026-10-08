@@ -1,0 +1,42 @@
+<dialog class="image-lightbox" data-image-lightbox aria-label="图片放大预览">
+  <button class="image-lightbox-close" type="button" data-lightbox-close aria-label="关闭图片预览">×</button>
+  <figure>
+    <img data-lightbox-image alt="" />
+    <figcaption data-lightbox-caption hidden></figcaption>
+  </figure>
+</dialog>
+
+<script>
+  const dialog = document.querySelector<HTMLDialogElement>('[data-image-lightbox]');
+  const enlargedImage = dialog?.querySelector<HTMLImageElement>('[data-lightbox-image]');
+  const caption = dialog?.querySelector<HTMLElement>('[data-lightbox-caption]');
+  const closeButton = dialog?.querySelector<HTMLButtonElement>('[data-lightbox-close]');
+
+  if (dialog && enlargedImage && caption && closeButton) {
+    document.querySelectorAll<HTMLImageElement>('.prose img').forEach((image) => {
+      if (image.closest('a, button')) return;
+
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'prose-image-zoom';
+      button.setAttribute('aria-label', image.alt ? `放大查看：${image.alt}` : '放大查看图片');
+      image.before(button);
+      button.append(image);
+
+      button.addEventListener('click', () => {
+        enlargedImage.src = image.currentSrc || image.src;
+        enlargedImage.alt = image.alt;
+        const text = image.closest('figure')?.querySelector('figcaption')?.textContent?.trim() || image.alt;
+        caption.textContent = text;
+        caption.hidden = !text;
+        dialog.showModal();
+      });
+    });
+
+    closeButton.addEventListener('click', () => dialog.close());
+    dialog.addEventListener('click', (event) => {
+      if (event.target === dialog) dialog.close();
+    });
+    dialog.addEventListener('close', () => enlargedImage.removeAttribute('src'));
+  }
+</script>

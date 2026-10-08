@@ -1,0 +1,24 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import BlogCard from '../../components/BlogCard.astro';
+import { getPublishedPosts } from '../../lib/content';
+
+const posts = await getPublishedPosts();
+---
+
+<BaseLayout title="博客" description="关于技术、研究、历史与可视化的个人写作。">
+  <header class="page-intro page-width">
+    <p class="eyebrow">Writing</p>
+    <h1>博客</h1>
+    <p>记录研究中的问题、阅读后的余响，以及做项目时留下的判断。</p>
+    <div class="page-intro-actions">
+      <a class="text-link" href="/archive/">查看归档 <span aria-hidden="true">→</span></a>
+    </div>
+  </header>
+
+  <section class="page-width list-section" aria-label="全部文章">
+    <div class="writing-list">
+      {posts.map((post) => <BlogCard post={post} />)}
+    </div>
+  </section>
+</BaseLayout>

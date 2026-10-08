@@ -1,0 +1,21 @@
+---
+import { siteConfig } from '../config';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div>
+      <p class="footer-name">{siteConfig.author}</p>
+      <p class="footer-note">文字、项目，以及一些未完待续。</p>
+    </div>
+    <div class="footer-links">
+      <a href="/archive/">归档</a>
+      <a href="/rss.xml">RSS</a>
+      <a href={`mailto:${siteConfig.email}`}>Email</a>
+      <a href={siteConfig.github} target="_blank" rel="noreferrer">GitHub</a>
+    </div>
+    <p class="footer-copyright">© {year} · Personal publication</p>
+  </div>
+</footer>

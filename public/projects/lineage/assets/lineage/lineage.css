@@ -1,0 +1,289 @@
+/* ============================================================
+ * lineage.css —— 帝王世系图视觉模块（跨王朝壳页面共享）
+ * 依赖：han.css 先行加载（--han-* 令牌）；lineage.js 负责渲染与滤镜注入。
+ * 壳页面只需：link han.css + link 本文件 + script lineage.js + 数据块。
+ * ============================================================ */
+
+/* 默认显示缩放：长卷幅面巨大，开卷即半缩纵览（视觉等同浏览器 50%）。
+   几何自洽——引擎量取与写入皆 offset 系（无 getBoundingClientRect），
+   同处缩放子树内一个坐标空间，连线/箭镞/浮层随之等比、不错位。
+   方印、纸纹随页面同缩；水印独以 zoom:2 抵消、恒守 100% 视观（见
+   #watermark）。截图工具（tools/shot.mjs）锚点按 100% 标定，重跑需
+   覆写 html{zoom:1} 或重测 */
+html { zoom: 0.5; }
+
+/* 主字库：文悦古体仿宋2；回落字库：霞鹜文楷等宽 Light。
+   上线用子集 woff2（全站现渲染用字＋兜底集，经 tools/subset-fonts.mjs
+   由同目录 otf/ttf 母本裁成，26MB/21MB → ~1MB，family 名不变）——
+   数据块增改用字后须重跑该工具再裁；母本 otf/ttf 仍随仓，供再裁剪 */
+@font-face {
+  font-family: "文悦古体仿宋2";
+  src: url("../fonts/wenyue-guti-fangsong-2.woff2") format("woff2");
+  font-display: swap;
+}
+@font-face {
+  font-family: "LXGW WenKai Mono Light";
+  src: url("../fonts/LXGWWenKaiMono-Light.woff2") format("woff2");
+  font-display: swap;
+}
+
+:root {
+  /* 字体链：文悦古体仿宋2 优先，缺字落霞鹜文楷等宽 Light，
+     再落系统已装的霞鹜文楷等宽常规（Light 字库缺的罕字如「㰘」） */
+  --han-font-serif: "文悦古体仿宋2", "LXGW WenKai Mono Light", "LXGW WenKai Mono", "LXGW WenKai",
+                    "霞鹜文楷等宽", "霞鹜文楷", "Kaiti SC", "STKaiti", "KaiTi", "楷体", serif;
+  --han-font-song:  var(--han-font-serif);
+  --han-font-kai:   var(--han-font-serif);
+
+  /* 世系图几何（脚本与样式共用）：竖排世系——辈分=行（上起），同辈横向展开。
+     列间纯留白（无通道机器）；辈分行间距为父子墨横担之廊 */
+  --lineage-col-w:  130px;  /* 单人横向占宽（位次·称号左 + 名字中 + 排行·母亲右） */
+  --lineage-gap-y:  52px;   /* 辈分行间距（父子墨横担之廊） */
+  --lineage-gap-x:  40px;   /* 列间距（纯留白；邻君七栏墨隙 32px 之基） */
+  --lineage-off-y:  40px;   /* 首行上垫 */
+  --lineage-side-gap: 6px;  /* 侧栏与名字之间的贴距（空栏向内递补时逐栏累加） */
+  --lineage-guard:  32px;   /* 版框线与任何字盒的最小净距（结构保护） */
+  --lineage-gen-w:  34px;   /* 版框内左侧代标带宽度（第壹代…竖排坐落处） */
+  --lineage-name-fs: var(--han-fs-2xl);  /* 名字字号 30px */
+  --lineage-anno-fs: var(--han-fs-xs);   /* 位次/称号/母亲/年号小字字号 12px */
+}
+
+/* 仿宋刻本书叶：程序生成旧纸 PNG（米褐净纸、稀疏纤维、折皱、极淡洇痕）
+   固定视口铺满，滚动时如隔窗观叶 */
+body {
+  background-color: #dfd4bc;   /* 纸纹加载前的兜底色 */
+  background-image: url("../textures/aged-paper.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-attachment: fixed;
+  overflow: auto;
+}
+
+/* ====== 画板：窄屏时横向滚动收在 main 内，页面本体不溢出 ====== */
+main { overflow-x: auto; overflow-y: hidden; }
+#board { position: relative; margin: 0 auto; }
+#lines { position: absolute; left: 0; top: 0; pointer-events: none; }
+#lines path {
+  stroke-linecap: square;
+  fill: none;
+}
+/* 墨刷世系线＝父子血缘：梳式正交墨线（父垂→辈间横担→各子垂收名顶，无箭镞；
+   帝位传承不画线，图内唯一常驻连线） */
+#lines path.ink {
+  stroke: color-mix(in srgb, var(--han-color-ink-800) 74%, transparent);
+  stroke-width: var(--han-border-width-2);
+  transition: opacity .15s ease;   /* 悬浮传位层浮现时整条退为背景 */
+}
+
+/* ====== 悬浮传位层（渐进增强：默认面无浮层，hover/钉住才浮现） ======
+   无关人员半透明；有顺接边的帝节点可悬停/点击（指针提示） */
+.node { transition: opacity .15s ease; }
+.node.dim { opacity: .25; }
+.node.hov { cursor: pointer; }
+/* 朱色传位线：浮层正交肘线＋收端箭镞（仅 hover/钉住态存在） */
+#lines path.focus {
+  stroke: var(--han-color-vermilion-700);
+  stroke-width: var(--han-border-width-2);
+}
+@media (prefers-reduced-motion: reduce) {
+  .node, #lines path.ink { transition: none; }
+}
+/* 辈分行带：与列线同粗细同墨度（1px、14% 墨）的虚线矩形，横贯树区框定一代 */
+#lines path.band {
+  stroke: color-mix(in srgb, var(--han-color-ink-800) 14%, transparent);
+  stroke-width: 1;
+  stroke-dasharray: 3 5;
+}
+
+/* ====== 题识：竖题居右（卷端题识，无栏线仅留白条） ====== */
+#heading {
+  position: absolute; z-index: 1;
+  display: flex; flex-direction: row-reverse;   /* 大题居右，副题次之 */
+  align-items: flex-start; justify-content: center;
+  gap: 10px;
+}
+#heading h1 {
+  margin-bottom: 0;
+  writing-mode: vertical-rl; text-orientation: upright;
+  color: var(--han-color-ink-800);              /* 刻本大题：浓墨，非朱色 */
+  font-size: var(--han-fs-3xl);
+  letter-spacing: .22em;
+  line-height: 1;
+}
+#heading p {
+  margin: 0;
+  writing-mode: vertical-rl; text-orientation: upright;
+  color: var(--han-color-ink-700);
+  font-size: var(--han-fs-sm);
+  letter-spacing: .18em;
+  line-height: 1;
+}
+/* 方印（可选 @seal）：右端题识下之方印，边长定值 100px、题识块下居中；正片叠底透纸。
+   纵向定位在引擎：Range 量题识文字实际底缘＋恒距（SEAL_GAP），不覆字；字体就绪后重定位 */
+.seal { position: absolute; z-index: 1; pointer-events: none; mix-blend-mode: multiply; }
+
+/* ====== 版框：粗墨单线大框（仿宋刻本版框），左让书口 ======
+   墨洇：主线以 feTurbulence 位移出不规则内外溢边；
+   另叠一层低透明度模糊墨晕，模拟墨汁渗入纸纤维 */
+.board-frame { position: absolute; inset: 14px 14px 14px 64px; z-index: 0; pointer-events: none; }
+.board-frame::before {
+  content: ""; position: absolute; inset: 0;
+  border: 4px solid color-mix(in srgb, var(--han-color-ink-800) 82%, transparent);
+  border-radius: 5px;   /* 圆角柔和：墨转角不露锐利直角 */
+  filter: url(#ink-bleed);
+}
+.board-frame::after {
+  content: ""; position: absolute; inset: -2px;
+  border: 6px solid color-mix(in srgb, var(--han-color-ink-800) 30%, transparent);
+  border-radius: 8px;
+  filter: url(#ink-halo);
+}
+.bankou svg { filter: url(#ink-bleed-sm); }   /* 鱼尾同洇；刻书题文字保持清晰 */
+
+/* ====== 书口（版框左外 margin）：黑鱼尾 + 刻书题 + 叶码（纯装饰） ====== */
+.bankou {
+  position: absolute; left: 18px; top: 14px; bottom: 14px; width: 34px;
+  z-index: 1; pointer-events: none;
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: space-between;
+  color: color-mix(in srgb, var(--han-color-ink-800) 72%, transparent);
+}
+.bankou .sp { flex: 1; }   /* 撑开：刻书题贴上线鱼尾，叶码贴下线鱼尾 */
+.bankou .bt {
+  writing-mode: vertical-rl; text-orientation: upright;
+  font-size: var(--han-fs-sm); letter-spacing: .34em; line-height: 1;
+  color: color-mix(in srgb, var(--han-color-ink-700) 60%, transparent);
+}
+
+/* ====== 世系节点：一格 = 一人，君主七栏（排行·位次·称号左、名字中、
+   母亲·即位·在位右；非君主无即位/在位两栏） ======
+   年号不另占栏：称号栏内朱色次run（数据以空格接写于称号后）；
+   排行（左最外·黑）由引擎按父下齿序自动生成，父为帝者冠皇字；
+   即位/在位（右·黑）出自君主行尾追加的即位年/在位年成对字段 */
+.node { position: absolute; width: var(--lineage-col-w); }
+.node .name {
+  position: absolute; left: 50%; top: 0; transform: translateX(-50%);
+  writing-mode: vertical-rl; text-orientation: upright;
+  font-size: var(--lineage-name-fs);
+  color: var(--han-color-ink-800);         /* 浓墨大字：刻本正文墨色 */
+  white-space: nowrap;
+}
+/* 侧栏锚定名字中线（非格缘），始终贴身；格宽只控制人际疏密。
+   君主七栏＝排行·位次·称号含年号次run（左，自名字向外）｜名字（中）｜
+   母亲·即位·在位（右，自名字向外）；
+   空栏不占位，外侧栏向内递补——实际偏移由 lineage.js 按有无内容逐栏分配，
+   此处 calc 仅为首栏默认位 */
+.node .pos, .node .ti, .node .rk {
+  position: absolute; top: 2px;
+  right: calc(50% + var(--lineage-name-fs) / 2 + var(--lineage-side-gap));
+  writing-mode: vertical-rl; text-orientation: upright;
+  font-size: var(--lineage-anno-fs);
+  white-space: nowrap;
+}
+.node .mo, .node .ji, .node .zai {
+  position: absolute; top: 2px;
+  left: calc(50% + var(--lineage-name-fs) / 2 + var(--lineage-side-gap));
+  writing-mode: vertical-rl; text-orientation: upright;
+  font-size: var(--lineage-anno-fs);
+  white-space: nowrap;
+}
+.node .ti { color: var(--han-color-vermilion-700); }   /* 称号：朱书，如刻本夹注 */
+.node .mo { color: var(--han-color-vermilion-700); }   /* 母亲：朱书（与称号同族） */
+.node .pos { color: var(--han-color-ink-800); }        /* 位次「明朝第壹位皇帝」/「南明第壹位皇帝」（前缀随名单）：黑 */
+.node .rk  { color: var(--han-color-ink-800); }        /* 排行「皇長子」（齿序自动、父为帝冠皇）：黑 */
+.node .ji, .node .zai { color: var(--han-color-ink-800); }   /* 即位/在位（行尾年数派生）：黑——结构·史实族 */
+.node .yr  { color: var(--han-color-vermilion-700); }  /* 年号「洪武」：称号栏内朱色次run（与称号同源一色，双号空格顺接），不另占栏 */
+/* 帝（@throne 名单成员）：诸栏全部加粗 */
+.node.imp .name, .node.imp .pos, .node.imp .ti, .node.imp .mo, .node.imp .rk,
+.node.imp .ji, .node.imp .zai, .node.imp .yr { font-weight: 700; }
+/* 合成加粗坏字（如「氏」）：保文悦本字不走 700（其轮廓绕向缺陷会被
+   Chromium 合成加粗描成空心），改 400 权重 + 描边仿粗，观感与邻字齐平；
+   描边宽随字号（em），名字与小字栏同此一式 */
+.node.imp .bb { font-weight: 400; -webkit-text-stroke: .05em currentColor; }
+/* 回落字加粗暂策：霞鹜文楷等宽 Light 无 Bold 面，Chromium 合成加粗在部分
+   字形轮廓上出空心/淡痕（如「碽」），与主字库「氏」同病；真 Bold 面入库
+   （assets/fonts/LXGWWenKaiMono-Bold.ttf 注册 700）前的过渡——回落字在加粗
+   栏内走 400 + 描边仿粗；Light 底子比主字库细，描边单独校 .04em
+   （.05em 过粗、.03em 过轻），不与 .bb 同值 */
+.node.imp .fbc { font-weight: 400; -webkit-text-stroke: .04em currentColor; }
+
+/* ====== 代标：版框内最左「第壹代…」竖排，坐落该辈虚线行带左端外 ====== */
+.gen {
+  position: absolute; z-index: 1;
+  display: flex; align-items: center; justify-content: center;
+  writing-mode: vertical-rl; text-orientation: upright;
+  font-size: var(--han-fs-md);        /* 18px：代标加重加大，以不超行高为限 */
+  font-weight: 700;
+  letter-spacing: .22em;
+  line-height: 1;
+  color: color-mix(in srgb, var(--han-color-ink-700) 82%, transparent);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+.gen .ch { display: inline-block; line-height: 1; height: 1em; }
+
+/* 逐字字盒：竖排混排时各字体 vhea 竖排原点不同，run 边界会错位叠字；
+   每字独立 inline-block 字盒，度量互不牵连 */
+.node .name, .node .pos, .node .ti, .node .mo, .node .rk, .node .ji,
+.node .zai, .node .yr { letter-spacing: 0; }
+.node .name .ch, .node .pos .ch, .node .ti .ch, .node .mo .ch, .node .rk .ch,
+.node .ji .ch, .node .zai .ch, .node .yr .ch {
+  display: inline-block; line-height: 1; height: 1em;
+}
+.node .name .ch { margin-bottom: .28em; }   /* 原 letter-spacing .28em */
+.node .pos .ch, .node .ti .ch, .node .mo .ch, .node .rk .ch,
+.node .ji .ch, .node .zai .ch, .node .yr .ch { margin-bottom: .18em; }
+.node .name .ch:last-child, .node .pos .ch:last-child, .node .ti .ch:last-child,
+.node .mo .ch:last-child, .node .rk .ch:last-child, .node .ji .ch:last-child,
+.node .zai .ch:last-child, .node .yr .ch:last-child { margin-bottom: 0; }
+/* 回落字墨迹补偿：两字库竖排原点若有差，回落字位移对齐主字库墨线
+   （换字库时此处要重新目验；初值 0） */
+/* 逐字回落：文悦古体仿宋2 缺字时，该字单独用霞鹜文楷等宽 Light，
+   避免浏览器系统回落到竖排度量残缺的装饰字体而叠字 */
+.fbc {
+  font-family: "LXGW WenKai Mono Light", "LXGW WenKai Mono", "LXGW WenKai",
+               "霞鹜文楷等宽", "霞鹜文楷", serif;
+}
+
+/* ====== 水印（可选，两式二择一） ======
+   甲式 @watermark=中心字：蒸馏团窠——单线外环＋云龙环（蒸馏线描：波状身·
+   放射足·尾叉·如意云气）＋轮廓心盘＋中心字，全线描无填充（实心盘会抬纸色
+   蚀对比）；极淡墨——只投资剪影、不投资细节，鳞甲瓣叶等高频细纹在低透明度
+   下会糊成灰晕，一概不画。
+   乙式 @watermark-art=线稿图：用户提供美术母本（如盘龙椭圆章）经
+   tools/make-mask.mjs 亮度→alpha 抽成墨色透底线稿（墨色烘入 PNG），页面
+   <img> 直挂——不用 CSS mask-image（Chromium 对 mask 图源行 CORS 校验，
+   file:// 协议下必拒）。不带母本自带纸底（否则低透明度下会浮出一块矩形
+   纸色斑）；细部密度是母本自己的事，页面只控透明度。
+   两式共用：固定视口居中、横滚长卷恒在、不入 pointer-events */
+#watermark {
+  position: fixed; left: 50%; top: 50%;
+  zoom: 2;                       /* 抵消根部默认 50% 缩放：水印视观尺寸恒 100% 不缩 */
+  transform: translate(-50%, -50%);
+  width: 55vmin; height: 55vmin;
+  opacity: .05;
+  color: var(--han-color-ink-800);
+  pointer-events: none;
+}
+/* 乙式：线稿图盒——宽高随图幅比例（1331×1181），二倍甲式之观（团窠
+   铺场，边出视口无碍）；不透明度 .10（墨色已烘入图、不似甲式纯描边） */
+#watermark.art { width: 128vmin; height: 114vmin; opacity: .10; }
+#watermark.art img { position: absolute; inset: 0; width: 100%; height: 100%; }
+#watermark svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+#watermark svg * { fill: none; stroke: currentColor; }
+#watermark .wm-char {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--han-font-serif);   /* 中心字随本页字系（仿宋），不引外来笔书 */
+  font-size: 22vmin; line-height: 1;
+}
+
+/* ====== 页脚落款 ====== */
+footer {
+  padding: var(--han-space-6) var(--han-gutter) var(--han-space-7);
+  text-align: center;
+  color: var(--han-color-text-secondary);
+  font-size: var(--han-fs-sm);
+  letter-spacing: var(--han-ls-wide);
+}

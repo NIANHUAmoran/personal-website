@@ -1,0 +1,37 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getPublishedPosts } from '../lib/content';
+import { formatShortDate } from '../lib/date';
+
+const posts = await getPublishedPosts();
+const postsByYear = posts.reduce<Record<string, typeof posts>>((groups, post) => {
+  const year = post.data.pubDate.getUTCFullYear().toString();
+  groups[year] ??= [];
+  groups[year].push(post);
+  return groups;
+}, {});
+---
+
+<BaseLayout title="归档" description="按年份浏览全部文章。">
+  <header class="page-intro page-width">
+    <p class="eyebrow">Archive</p>
+    <h1>归档</h1>
+    <p>按时间收拢写过的文章。</p>
+  </header>
+
+  <div class="archive page-width">
+    {Object.entries(postsByYear).map(([year, yearPosts]) => (
+      <section class="archive-year" aria-labelledby={`year-${year}`}>
+        <h2 id={`year-${year}`}>{year}</h2>
+        <ol>
+          {yearPosts.map((post) => (
+            <li>
+              <time datetime={post.data.pubDate.toISOString()}>{formatShortDate(post.data.pubDate)}</time>
+              <a href={`/blog/${post.id}/`}>{post.data.title}</a>
+            </li>
+          ))}
+        </ol>
+      </section>
+    ))}
+  </div>
+</BaseLayout>
