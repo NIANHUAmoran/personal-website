@@ -1,7 +1,7 @@
 /* ============================================================
  * lineage.css —— 帝王世系图视觉模块（跨王朝壳页面共享）
- * 依赖：han.css 先行加载（--han-* 令牌）；lineage.js 负责渲染与滤镜注入。
- * 壳页面只需：link han.css + link 本文件 + script lineage.js + 数据块。
+ * 自足：令牌与基础样式已收容（han 框架撤除），lineage.js 负责渲染与滤镜注入。
+ * 壳页面只需：link 本文件 + script lineage.js + 数据块。
  * ============================================================ */
 
 /* 默认显示缩放：长卷幅面巨大，开卷即半缩纵览（视觉等同浏览器 50%）。
@@ -27,7 +27,66 @@ html { zoom: 0.5; }
   font-display: swap;
 }
 
+/* ====== 基础（原 han base/accessibility 之必需件，冻值收容） ======
+   盒模归零、body 字面文色、跳转链接；长卷页观感与 han 在场时逐像素同 */
+*,
+*::before,
+*::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  text-size-adjust: 100%;
+}
+
+.han-skip-link {
+  position: fixed; top: 12px; left: 12px; z-index: 999;
+  padding: 8px 16px;
+  color: #fefaf0; background: #936b09;   /* imperial 主题 on-accent / accent-control 冻值 */
+  text-decoration: none;
+  border-radius: 4px;
+  transform: translateY(calc(-100% - 24px));
+  transition: transform 100ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.han-skip-link:focus-visible { transform: translateY(0); }
+
+/* 滚动条与选区：原 han base 冻值（ink-100 #ecebe6 / ink-300 #b5b2a9 / ink-400 #8a867d）。
+   10px 自定义滚动条属布局一环——视口内宽决定长卷居中与固定纸纹定位，须与 han 在场时同宽 */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #ecebe6; border-radius: 4px; }
+::-webkit-scrollbar-thumb {
+  background: #b5b2a9;
+  border: 2px solid #ecebe6;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover { background: #8a867d; }
+* { scrollbar-color: #b5b2a9 #ecebe6; scrollbar-width: thin; }
+
+::selection { color: #4a3a1a; background: rgba(192, 57, 43, 0.25); }
+
+svg { display: block; max-width: 100%; height: auto; }
+
 :root {
+  /* 冻值令牌（原 han tokens.css 与 imperial 主题在长卷页的生效值）：
+     墨·朱·文色·字阶·空白·线宽——改配色时此处即单一事实来源 */
+  --han-color-ink-700: #2a2824;
+  --han-color-ink-800: #1a1916;
+  --han-color-vermilion-700: #8a251b;
+  --han-color-text-primary: #4a3a1a;
+  --han-color-text-secondary: #7a6538;
+  --han-fs-xs: 12px;
+  --han-fs-sm: 14px;
+  --han-fs-md: 18px;
+  --han-fs-2xl: 30px;
+  --han-fs-3xl: 38px;
+  --han-space-6: 32px;
+  --han-space-7: 48px;
+  --han-gutter: 24px;
+  --han-ls-wide: 0.05em;
+  --han-border-width-2: 2px;
+
   /* 字体链：文悦古体仿宋2 优先，缺字落霞鹜文楷等宽 Light，
      再落系统已装的霞鹜文楷等宽常规（Light 字库缺的罕字如「㰘」）；
      两库俱缺之字（扩展B罕字如「」，霞鹜全系不收）再落宋体补足——
@@ -54,6 +113,11 @@ html { zoom: 0.5; }
 /* 仿宋刻本书叶：程序生成旧纸 PNG（米褐净纸、稀疏纤维、折皱、极淡洇痕）
    固定视口铺满，滚动时如隔窗观叶 */
 body {
+  min-height: 100vh;
+  font-family: var(--han-font-serif);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--han-color-text-primary);
   background-color: #dfd4bc;   /* 纸纹加载前的兜底色 */
   background-image: url("../textures/aged-paper.png");
   background-size: cover;
@@ -110,6 +174,7 @@ main { overflow-x: auto; overflow-y: hidden; }
   margin-bottom: 0;
   writing-mode: vertical-rl; text-orientation: upright;
   color: var(--han-color-ink-800);              /* 刻本大题：浓墨，非朱色 */
+  font-weight: 700;                             /* 原 han base 标题字重冻值（--han-fw-bold） */
   font-size: var(--han-fs-3xl);
   letter-spacing: .22em;
   line-height: 1;
