@@ -122,7 +122,7 @@ probeCv.width = probeCv.height = 96;
 const probeCtx = probeCv.getContext("2d", { willReadFrequently: true });
 const probeCache = new Map();
 const MAIN_PROBE_FONT = '64px "文悦古体仿宋2"';   /* 与 lineage.css @font-face 同步 */
-const FALLBACK_PROBE_FONT = '64px "LXGW WenKai Mono Light", "LXGW WenKai Mono", "LXGW WenKai", "霞鹜文楷等宽", "霞鹜文楷", serif';   /* 与 .fbc 回落链同源 */
+const FALLBACK_PROBE_FONT = '64px "LXGW WenKai Mono Light", "LXGW WenKai Mono", "LXGW WenKai", "霞鹜文楷等宽", "霞鹜文楷", "Songti SC", "STSong", "SimSun", "宋体", "NSimSun", "SimSun-ExtB", serif';   /* 与 .fbc 回落链同源 */
 let notdefSig = null;
 
 function probeSig(ch, font) {

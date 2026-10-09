@@ -29,9 +29,12 @@ html { zoom: 0.5; }
 
 :root {
   /* 字体链：文悦古体仿宋2 优先，缺字落霞鹜文楷等宽 Light，
-     再落系统已装的霞鹜文楷等宽常规（Light 字库缺的罕字如「㰘」） */
+     再落系统已装的霞鹜文楷等宽常规（Light 字库缺的罕字如「㰘」）；
+     两库俱缺之字（扩展B罕字如「」，霞鹜全系不收）再落宋体补足——
+     SimSun 承常用字、SimSun-ExtB 承扩展B，显名在链、不恃浏览器末位兜底 */
   --han-font-serif: "文悦古体仿宋2", "LXGW WenKai Mono Light", "LXGW WenKai Mono", "LXGW WenKai",
-                    "霞鹜文楷等宽", "霞鹜文楷", "Kaiti SC", "STKaiti", "KaiTi", "楷体", serif;
+                    "霞鹜文楷等宽", "霞鹜文楷", "Kaiti SC", "STKaiti", "KaiTi", "楷体",
+                    "Songti SC", "STSong", "SimSun", "宋体", "NSimSun", "SimSun-ExtB", serif;
   --han-font-song:  var(--han-font-serif);
   --han-font-kai:   var(--han-font-serif);
 
@@ -240,10 +243,12 @@ main { overflow-x: auto; overflow-y: hidden; }
 /* 回落字墨迹补偿：两字库竖排原点若有差，回落字位移对齐主字库墨线
    （换字库时此处要重新目验；初值 0） */
 /* 逐字回落：文悦古体仿宋2 缺字时，该字单独用霞鹜文楷等宽 Light，
-   避免浏览器系统回落到竖排度量残缺的装饰字体而叠字 */
+   避免浏览器系统回落到竖排度量残缺的装饰字体而叠字；
+   霞鹜亦缺之字（扩展B等）顺落宋体/SimSun-ExtB 补足，链尾与 --han-font-serif 同序 */
 .fbc {
   font-family: "LXGW WenKai Mono Light", "LXGW WenKai Mono", "LXGW WenKai",
-               "霞鹜文楷等宽", "霞鹜文楷", serif;
+               "霞鹜文楷等宽", "霞鹜文楷",
+               "Songti SC", "STSong", "SimSun", "宋体", "NSimSun", "SimSun-ExtB", serif;
 }
 
 /* ====== 水印（可选，两式二择一） ======
