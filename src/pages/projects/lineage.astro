@@ -1,0 +1,168 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const entries = [
+  {
+    label: '周朝 · 诸侯世系',
+    title: '晋韩世系',
+    description: '唐叔虞裔 · 晋国暨韩氏',
+    href: '/projects/lineage/jin_state_lineage.html',
+  },
+  {
+    label: '明朝 · 帝系',
+    title: '明朝世系',
+    description: '明太祖朱元璋裔',
+    href: '/projects/lineage/ming_lineage.html',
+  },
+  {
+    label: '清朝 · 帝系',
+    title: '清朝世系',
+    description: '清太祖爱新觉罗·努尔哈赤裔',
+    href: '/projects/lineage/qing_lineage.html',
+  },
+];
+---
+
+<BaseLayout
+  title="历代帝系与世系图谱"
+  description="以谱系与君位传承为线索，整理并可视化中国历代帝王、宗室与诸侯世系。"
+>
+  <div class="folio page-width">
+    <header class="project-header">
+      <p class="eyebrow">Dynasty · Lineage · Succession</p>
+      <h1>历代帝系与世系图谱</h1>
+      <p class="introduction">以谱系与君位传承为线索，整理并可视化中国历代帝王、宗室与诸侯世系。</p>
+    </header>
+
+    <section class="lineage-index" aria-label="世系目录">
+      <div class="index-heading">
+        <p class="eyebrow">Index / 01</p>
+        <h2>世系目录</h2>
+      </div>
+
+      <div class="entry-list">
+        {
+          entries.map((entry) => (
+            <a class="lineage-entry" href={entry.href}>
+              <span class="entry-label">{entry.label}</span>
+              <span class="entry-title">
+                {entry.title} <span class="entry-arrow" aria-hidden="true">↗</span>
+              </span>
+              <span class="entry-description">{entry.description}</span>
+            </a>
+          ))
+        }
+      </div>
+    </section>
+
+    <footer class="folio-footer">
+      <span>持续整理中</span>
+      <a href="/columns/lineage/">浏览“帝系传承”专栏 →</a>
+    </footer>
+  </div>
+</BaseLayout>
+
+<style>
+  .folio {
+    padding-bottom: clamp(4rem, 8vw, 7rem);
+  }
+
+  .project-header {
+    padding-block: 2rem clamp(2.5rem, 4vw, 3.5rem);
+    border-bottom: 1px solid var(--ink);
+  }
+
+  h1,
+  h2 {
+    color: var(--ink);
+    font-weight: 400;
+  }
+
+  h1 {
+    margin: 0.5rem 0 0;
+    font-size: clamp(1.875rem, 3vw, 2.5rem);
+    line-height: 1.2;
+  }
+
+  .introduction {
+    max-width: 46rem;
+    margin: 1.5rem 0 0;
+    color: var(--muted);
+    font-size: clamp(1rem, 1.4vw, 1.1rem);
+  }
+
+  .lineage-index {
+    padding-block: clamp(3rem, 6vw, 4.5rem);
+  }
+
+  /* 不沿用主站 .section-heading（横排、题居右）：目录题识仍竖叠于左 */
+  .index-heading {
+    margin-bottom: clamp(1.75rem, 4vw, 2.75rem);
+  }
+
+  h2 {
+    margin: 0.3rem 0 0;
+    font-size: clamp(1.375rem, 2vw, 1.75rem);
+    line-height: 1.35;
+  }
+
+  .entry-list {
+    border-top: 1px solid var(--line);
+  }
+
+  .lineage-entry {
+    display: block;
+    padding: 1.5rem 0 1.7rem;
+    border-bottom: 1px solid var(--line);
+    text-decoration: none;
+  }
+
+  .entry-label {
+    display: block;
+    color: var(--muted);
+    font-size: 0.68rem;
+    letter-spacing: 0.04em;
+  }
+
+  .entry-title {
+    display: block;
+    margin-top: 0.3rem;
+    font-size: clamp(1.1rem, 1.7vw, 1.25rem);
+    font-weight: 400;
+    line-height: 1.5;
+  }
+
+  .entry-arrow {
+    margin-left: 0.2rem;
+    color: var(--accent);
+    font-size: 0.85em;
+  }
+
+  .entry-description {
+    display: block;
+    max-width: 43rem;
+    margin-top: 0.5rem;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+
+  .folio-footer {
+    padding-top: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    color: var(--muted);
+    border-top: 1px solid var(--ink);
+    font-size: 0.72rem;
+  }
+
+  .folio-footer a {
+    text-decoration-color: var(--line);
+  }
+
+  @media (max-width: 42rem) {
+    .folio-footer {
+      flex-direction: column;
+    }
+  }
+</style>
