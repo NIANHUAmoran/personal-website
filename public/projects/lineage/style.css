@@ -17,6 +17,17 @@
   --site-font: "Clear Han Serif", "Songti SC", STSong, SimSun, serif;
 }
 
+/* 与主站同一套暗色令牌（src/styles/global.css），主题随 localStorage site-theme */
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #171a17;
+  --ink: #f0ecdf;
+  --muted: #a2a69e;
+  --line: #3b403a;
+  --accent: #92bea3;
+  --signal: #e58c62;
+}
+
 *,
 *::before,
 *::after {
@@ -32,17 +43,31 @@ body {
   min-height: 100vh;
   margin: 0;
   color: var(--ink);
-  background-color: var(--paper);
-  background-image: url("/images/site-background.png");
-  background-position: center;
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
+  /* 纸色归 html 画布：body 不透明底会盖住下面的固定水彩层 */
   font-family: var(--site-font);
   font-size: 1rem;
   line-height: 1.75;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+}
+
+/* 水彩背景独立固定层、50% 透明度，与主站同源同法 */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image: url("/images/site-background.png");
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* 暗色下压暗水彩层，深色纸底透出、画意只余暗纹 */
+html[data-theme="dark"] body::before {
+  filter: brightness(0.32) saturate(0.72);
 }
 
 a {
@@ -71,13 +96,40 @@ a:focus-visible {
   border-bottom: 1px solid var(--ink);
 }
 
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: clamp(3.5rem, 6vw, 5rem);
+}
+
 .back-link {
   display: inline-block;
-  margin-bottom: clamp(3.5rem, 6vw, 5rem);
   font-size: 0.76rem;
   font-weight: 650;
   letter-spacing: 0.04em;
   text-decoration-color: var(--line);
+}
+
+/* 主题开关：与主站 Header 同款 */
+.theme-toggle {
+  width: 2.4rem;
+  min-height: 2.4rem;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  background: transparent;
+  border: 0;
+  border-left: 1px solid var(--line);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.theme-toggle:hover {
+  color: var(--ink);
 }
 
 .kicker {
