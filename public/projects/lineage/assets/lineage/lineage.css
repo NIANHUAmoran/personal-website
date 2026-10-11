@@ -368,3 +368,66 @@ footer {
   font-size: var(--han-fs-sm);
   letter-spacing: var(--han-ls-wide);
 }
+
+/* ====== 寻人与深链（引擎生成，壳零改）：右下角朱印「尋」点开输入条，
+   候选小笺列名＋称号＋代次；定位＝节点滚至视口居中＋朱晕呼吸两闪，
+   君主顺手代钉传位层；#人名 深链开页即定位，点节点回写 hash ====== */
+#seek {
+  position: fixed; right: 22px; bottom: 22px; z-index: 5;
+  zoom: 2;                        /* 抵消根部默认 50% 缩放：视观尺寸恒 1:1（水印同法） */
+  display: flex; flex-direction: row; align-items: flex-end; gap: 8px;
+  /* 同排横陈：输入条在左、朱印「尋」恒居右（用户指名，不换行不上下叠） */
+  opacity: .3; transition: opacity .25s ease;   /* 闲时自隐，不问世系图 */
+}
+#seek:hover, #seek:focus-within { opacity: 1; } /* 悬停或用事（输入/择条）即复全 */
+/* 朱印入口：闲章一格，印文「尋」 */
+#seek-seal {
+  width: 34px; height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  font: inherit; font-size: 19px; font-weight: 700;
+  color: var(--han-color-vermilion-700);
+  background: color-mix(in srgb, #fffdf7 88%, transparent);
+  border: 2px solid var(--han-color-vermilion-700); border-radius: 4px;
+  cursor: pointer; line-height: 1;
+}
+#seek-seal:hover { background: color-mix(in srgb, var(--han-color-vermilion-700) 10%, #fffdf7); }
+#seek-panel { display: flex; flex-direction: column; gap: 6px; width: 240px; }
+#seek-input {
+  font: inherit; font-size: 14px;
+  height: 34px; box-sizing: border-box;   /* 与朱印等高齐脚，同排成一行 */
+  padding: 5px 9px;
+  color: var(--han-color-ink-800);
+  background: color-mix(in srgb, #fffdf7 94%, transparent);
+  border: 1px solid color-mix(in srgb, var(--han-color-ink-800) 32%, transparent);
+  border-radius: 3px; outline: none;
+}
+#seek-input:focus { border-color: var(--han-color-vermilion-700); }
+#seek-list {
+  max-height: 264px; overflow-y: auto;
+  background: color-mix(in srgb, #fffdf7 96%, transparent);
+  border: 1px solid color-mix(in srgb, var(--han-color-ink-800) 26%, transparent);
+  border-radius: 3px;
+  box-shadow: 0 3px 12px color-mix(in srgb, var(--han-color-ink-800) 16%, transparent);
+}
+#seek-list button {
+  display: block; width: 100%;
+  font: inherit; font-size: 13px; text-align: left;
+  padding: 4px 9px; border: 0; background: none; cursor: pointer;
+  color: var(--han-color-ink-800);
+}
+#seek-list button b { font-weight: 700; }
+#seek-list button.sel { background: color-mix(in srgb, var(--han-color-vermilion-700) 12%, transparent); }
+#seek-list button:hover { background: color-mix(in srgb, var(--han-color-vermilion-700) 7%, transparent); }
+#seek-list .none {
+  padding: 4px 9px; font-size: 13px;
+  color: color-mix(in srgb, var(--han-color-ink-700) 62%, transparent);
+}
+/* 定位闪：名柱朱晕呼吸两息即散（不夺墨字本色，只借光） */
+.node.found .name { animation: found-glow 1.1s ease-in-out 2; }
+@keyframes found-glow {
+  0%, 100% { text-shadow: none; }
+  50% { text-shadow: 0 0 14px 4px color-mix(in srgb, var(--han-color-vermilion-700) 72%, transparent); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .node.found .name { animation: none; text-shadow: 0 0 10px 2px color-mix(in srgb, var(--han-color-vermilion-700) 60%, transparent); }
+}

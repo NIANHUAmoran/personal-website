@@ -1075,7 +1075,179 @@ document.addEventListener("click", function () {   /* 点空白解除钉住 */
 board.style.width = boardW + "px";
 board.style.height = boardH + "px";
 
-/* 载入居中对准主干（始祖居树宽正中），题识在右可滚见 */
-main.scrollLeft = Math.max(0, ORIGIN + dRoot.w / 2 - main.clientWidth / 2);
+/* ── 寻人与深链（渐进增强：DOM 全由引擎生成，壳零改） ──────────────
+   寻人：右下角朱印「尋」点开输入条，名/称号/年号/母即时索（子串即中，
+     名次优先、同序保文档序），多命中出候选小笺（名＋称号＋第N代），
+     选中即定位：节点滚至视口居中、朱晕呼吸两闪；君主顺手代钉传位层。
+     键盘：/ 聚焦，↑↓择条，Enter 定位，Esc 收。
+   深链：#人名 开页即定位加亮（字体就绪后复定位一次），点任一节点回写
+     hash（replaceState 不污历史）——博文可径链某人某格。
+     重名（占位名）取文档序第一；寻人与深链共一定位函数。
+   简繁：查询与节点字段同表折叠为简体再比——输入「朱祁镇」即中「朱祁鎮」。
+     表为定域手写（收自全站实用字集，264 对），数据添新繁体字后需照补，
+     收字法同 tools/subset-fonts.mjs；表只求自洽（同字同折、两侧一致），
+     不求语言学精确，幹/乾多归一无碍匹配。折叠字段 _f* 建索引时一次算成。 */
+const T2S_SRC =
+  "侖倉倫側傑傳僑儀剛劉勝勳勵厲吳呂啟喚單國圖堯塊塏塵壽嬪嬰孫寧寶將尋層崗嶽師帶幹庫廢廣" +
+  "張彌恆愛愨愷慶憖憫憲懷懸掄揚擊據數於時晉晝暉曆書會棄棖棟楊楨極榮樂標樞樺檢檳欄權欒欽" +
+  "殤沖涇渾湯溫漢漵潁潔潛潤澤濟濤灃為烏烴無煒煙煥熾燁燦爾獻瑪璉瓊畫發監盧碩祿祐禎禕禪禮" +
+  "稱筆節簡紀納純紱紹絡統綏綬綱綿緒線緡緯繼羅聖聰肅臘臨與興荊莊華萬葉蔣蕩薊蘄蘇蘭虛號蝨" +
+  "蟣衛袞見親覺訢許詭誠談諸謙謹讓豐貝貞貳貴費賈賓賕賢質賴賽趙車軍載輔輝輩輿連達遜遼鄧鄭" +
+  "釘鈕鈞鉗銓銘錫鍔鍵鍺鍾鎮鏐鐘鐸鑿長開閔閻陰陳陸陽隱雙靈靜韓韜頃順須頎額顏顒類顯餘饒馬" +
+  "馮驕驩驪魯鹹麗點黶齊齒乾";
+const T2S_DST =
+  "伦仓伦侧杰传侨仪刚刘胜勋励厉吴吕启唤单国图尧块垲尘寿嫔婴孙宁宝将寻层岗岳师带干库废广" +
+  "张弥恒爱悫恺庆慭悯宪怀悬抡扬击据数于时晋昼晖历书会弃枨栋杨桢极荣乐标枢桦检槟栏权栾钦" +
+  "殇冲泾浑汤温汉溆颍洁潜润泽济涛沣为乌烃无炜烟焕炽烨灿尔献玛琏琼画发监卢硕禄佑祯祎禅礼" +
+  "称笔节简纪纳纯绂绍络统绥绶纲绵绪线缗纬继罗圣聪肃腊临与兴荆庄华万叶蒋荡蓟蕲苏兰虚号虱" +
+  "虮卫衮见亲觉欣许诡诚谈诸谦谨让丰贝贞贰贵费贾宾赇贤质赖赛赵车军载辅辉辈舆连达逊辽邓郑" +
+  "钉钮钧钳铨铭锡锷键锗钟镇镠钟铎凿长开闵阎阴陈陆阳隐双灵静韩韬顷顺须颀额颜颙类显余饶马" +
+  "冯骄欢丽鲁咸丽点黡齐齿干";
+const T2S = {};
+for (let i = 0; i < T2S_SRC.length; i++) T2S[T2S_SRC[i]] = T2S_DST[i];
+const fold = function (s) {
+  if (!s) return s;
+  let out = "";
+  for (const ch of s) out += T2S[ch] || ch;
+  return out;
+};
+for (const n of shown) {
+  n._fname = fold(n.name);
+  n._fti = fold(n.ti);
+  n._fnh = fold(n.nh);
+  n._fmo = fold(n.mo);
+}
+const seekMatch = function (q) {
+  q = fold(q.trim());
+  if (!q) return [];
+  const scored = [];
+  for (const n of shown) {
+    const sc = n._fname === q ? 0
+             : n._fname.includes(q) ? 1
+             : n._fti && n._fti.includes(q) ? 2
+             : n._fnh && n._fnh.includes(q) ? 3
+             : n._fmo && n._fmo.includes(q) ? 4 : -1;
+    if (sc >= 0) scored.push({ n: n, sc: sc });
+  }
+  scored.sort(function (a, b) { return a.sc - b.sc; });   /* 稳定排序：同序保文档序 */
+  return scored.slice(0, 30).map(function (s) { return s.n; });
+};
+const setHash = function (n) {
+  history.replaceState(null, "", "#" + encodeURIComponent(n.name));
+};
+let foundTimer = 0;
+const locate = function (n) {
+  const el = els.get(n);
+  el.scrollIntoView({ block: "center", inline: "center", behavior: "smooth" });
+  el.classList.remove("found");
+  void el.offsetWidth;                              /* 同节点连定位亦重闪 */
+  el.classList.add("found");
+  clearTimeout(foundTimer);
+  foundTimer = setTimeout(function () { el.classList.remove("found"); }, 2400);
+  if (focusInc.has(n)) { pinned = n; applyFocus(n); }   /* 君主：代钉传位层 */
+  setHash(n);
+};
+/* 深链回写：点任一节点即以其名入 hash（.hov 钉住监听另挂，同元素并存不悖） */
+for (const n of shown) els.get(n).addEventListener("click", function () { setHash(n); });
+
+const seek = document.createElement("div");
+seek.id = "seek";
+const panel = document.createElement("div");
+panel.id = "seek-panel"; panel.hidden = true;
+const list = document.createElement("div");
+list.id = "seek-list"; list.hidden = true;
+const input = document.createElement("input");
+input.id = "seek-input"; input.type = "text";
+input.placeholder = "名·称号·年号·母"; input.autocomplete = "off";
+input.setAttribute("aria-label", "寻人：按名、称号、年号或母亲检索");
+panel.appendChild(list); panel.appendChild(input);
+const sealBtn = document.createElement("button");
+sealBtn.id = "seek-seal"; sealBtn.type = "button";
+sealBtn.title = "尋人（/）"; sealBtn.setAttribute("aria-label", "尋人");
+sealBtn.setAttribute("aria-expanded", "false");
+sealBtn.textContent = "尋";
+seek.appendChild(panel); seek.appendChild(sealBtn);
+document.body.appendChild(seek);
+seek.addEventListener("click", function (ev) { ev.stopPropagation(); });  /* 不触「点空白解除钉住」 */
+
+let sel = -1, hits = [];
+const renderList = function (keepSel) {
+  list.textContent = "";
+  if (!keepSel) sel = hits.length === 1 ? 0 : -1;   /* 独中即预选，Enter 径达 */
+  if (!input.value.trim()) { list.hidden = true; return; }
+  list.hidden = false;
+  if (!hits.length) {
+    const none = document.createElement("div");
+    none.className = "none"; none.textContent = "無此人";
+    list.appendChild(none);
+    return;
+  }
+  hits.forEach(function (n, i) {
+    const row = document.createElement("button");
+    row.type = "button";
+    if (i === sel) row.className = "sel";
+    const sn = document.createElement("b"); sn.textContent = n.name;
+    row.appendChild(sn);
+    const note = [];
+    if (n.ti) note.push(n.ti + (n.nh ? " " + n.nh : ""));
+    note.push("第" + hanNum(n.depth + 1) + "代");
+    row.appendChild(document.createTextNode("　" + note.join("　")));
+    row.addEventListener("click", function () { choose(n); });
+    list.appendChild(row);
+  });
+  const selRow = list.children[sel];
+  if (selRow && selRow.scrollIntoView) selRow.scrollIntoView({ block: "nearest" });
+};
+const closePanel = function () {
+  panel.hidden = true;
+  sealBtn.setAttribute("aria-expanded", "false");
+};
+const choose = function (n) { closePanel(); locate(n); };
+const openPanel = function () {
+  panel.hidden = false;
+  sealBtn.setAttribute("aria-expanded", "true");
+  input.focus();
+  input.select();
+};
+sealBtn.addEventListener("click", function () {
+  if (panel.hidden) openPanel(); else closePanel();
+});
+input.addEventListener("input", function () {
+  hits = seekMatch(input.value);
+  renderList(false);
+});
+input.addEventListener("keydown", function (ev) {
+  if (ev.key === "Escape") { closePanel(); input.blur(); return; }
+  if (ev.key === "ArrowDown" || ev.key === "ArrowUp") {
+    if (!hits.length) return;
+    ev.preventDefault();
+    sel = ((sel < 0 ? 0 : sel) + (ev.key === "ArrowDown" ? 1 : -1) + hits.length) % hits.length;
+    renderList(true);
+    return;
+  }
+  if (ev.key === "Enter") {
+    const n = hits[sel >= 0 ? sel : 0];
+    if (n) choose(n);
+  }
+});
+document.addEventListener("keydown", function (ev) {
+  if (ev.key === "/" && !/^(INPUT|TEXTAREA)$/.test(ev.target.tagName || "")) {
+    ev.preventDefault();
+    openPanel();
+  }
+});
+
+/* 载入定位：有 #人名 深链先之（滚动归 locate 接管），无则居中对准主干
+   （始祖居树宽正中，题识在右可滚见） */
+const hashName = decodeURIComponent((location.hash || "").slice(1));
+const hashFold = fold(hashName);
+const hashHit = hashName ? seekMatch(hashName).filter(function (n) { return n._fname === hashFold; })[0] : null;
+if (hashHit) {
+  locate(hashHit);
+  if (document.fonts && document.fonts.ready)
+    document.fonts.ready.then(function () { locate(hashHit); });   /* 字体就绪度量或移，复定位 */
+} else {
+  main.scrollLeft = Math.max(0, ORIGIN + dRoot.w / 2 - main.clientWidth / 2);
+}
 
 })();
