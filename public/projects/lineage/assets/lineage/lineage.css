@@ -262,6 +262,15 @@ main { overflow-x: auto; overflow-y: hidden; }
 .node .rk  { color: var(--han-color-ink-800); }        /* 排行「皇長子」（齿序自动、父为帝冠皇）：黑 */
 .node .ji, .node .zai { color: var(--han-color-ink-800); }   /* 即位/在位（行尾年数派生）：黑——结构·史实族 */
 .node .yr  { color: var(--han-color-vermilion-700); }  /* 年号「洪武」：称号栏内朱色次run（与称号同源一色，双号空格顺接），不另占栏 */
+/* 死于非命朱点（注记族·同朱）：名栏末字下一点朱，标非自然死亡；
+   纯 CSS 画圆——无文字、不赖字体子集；入名栏流故 nameH 自动含之，
+   墨线下口与悬停障碍自然避让，随节点淡出 */
+.node .name .fym {
+  display: inline-block; width: 6px; height: 6px;
+  margin-top: 5px; border-radius: 50%;
+  background: var(--han-color-vermilion-700);
+  vertical-align: middle;                   /* 竖排中沿块轴（水平）居中于名栏 */
+}
 /* 帝（@throne 名单成员）：诸栏全部加粗 */
 .node.imp .name, .node.imp .pos, .node.imp .ti, .node.imp .mo, .node.imp .rk,
 .node.imp .ji, .node.imp .zai, .node.imp .yr { font-weight: 700; }
@@ -305,6 +314,8 @@ main { overflow-x: auto; overflow-y: hidden; }
 .node .name .ch:last-child, .node .pos .ch:last-child, .node .ti .ch:last-child,
 .node .mo .ch:last-child, .node .rk .ch:last-child, .node .ji .ch:last-child,
 .node .zai .ch:last-child, .node .yr .ch:last-child { margin-bottom: 0; }
+/* 朱点入场则末字让位：点距（.fym margin-top）独行，不叠字距 */
+.node .name .ch:has(+ .fym) { margin-bottom: 0; }
 /* 回落字墨迹补偿：两字库竖排原点若有差，回落字位移对齐主字库墨线
    （换字库时此处要重新目验；初值 0） */
 /* 逐字回落：文悦古体仿宋2 缺字时，该字单独用霞鹜文楷等宽 Light，

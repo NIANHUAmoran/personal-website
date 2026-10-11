@@ -201,7 +201,9 @@ const hanDigits = function (y) {
 /* ---------- 解析数据块（v4：名字|称号 年号|母亲；君主行尾可追加即位年/在位年成对） ----------
    年号接写称号后、空格分隔，显示为称号栏内朱色次run（不另占栏）；
    旧式第四栏单独在位年已废——今为行尾追加的即位年/在位年成对字段
-   （复辟按段顺四数），派生即位/在位两栏 */
+   （复辟按段顺四数），派生即位/在位两栏；
+   另有位置无关的独立段二种：序齒N（排行栏接排齿序）与
+   死于非命（名栏末字下缀一点朱，简繁均认）——均不占栏位 */
 function parseData(text) {
   const meta = { title: "", subtitle: "", juan: "", leaf: "", seal: "", thrones: [] };
   const root = { name: "", ti: "", nh: "", mo: "", children: [] };
@@ -220,11 +222,17 @@ function parseData(text) {
     }
     const indent = line.match(/^ */)[0].length;
     const level = Math.floor(indent / 2);
-    /* 序齒段（序齒N，简繁均认）先摘：位置无关（收行尾、年对之后亦合法），
-       摘于字段定位与年对配对之前——不占栏位、不乱奇偶校验 */
-    let xc = 0;
+    /* 独立段先摘：序齒N 与 死于非命（均简繁并认、位置无关——收行尾、
+       年对之后亦合法），摘于字段定位与年对配对之前——不占栏位、不乱奇偶校验 */
+    let xc = 0, fym = false;
     const parts = t.split("|").filter(function (s) {
-      const m = s.trim().match(/^序[齒齿](\d+)$/);
+      const x = s.trim();
+      if (/^死[于於]非命$/.test(x)) {   /* 非自然死亡标记：名栏末字下缀一点朱 */
+        if (fym) console.warn("[lineage] 死于非命段一行只取其一，多余已弃：", t);
+        else fym = true;
+        return false;
+      }
+      const m = x.match(/^序[齒齿](\d+)$/);
       if (!m) return true;
       if (xc) console.warn("[lineage] 序齒段一行只取其一，多余已弃：", t);
       else if (+m[1] < 1) console.warn("[lineage] 序齒须正整数，此段已弃：", t);
@@ -251,6 +259,7 @@ function parseData(text) {
       mo: (parts[2] || "").trim(),            /* 母亲（可空） */
       segs: segs,                             /* 即位/在位段对（可空；非君主不书） */
       xc: xc,                                 /* 序齒（数据行手书；0＝未书，不显示） */
+      fym: fym,                               /* 死于非命（true＝名栏末字下缀一点朱；缺省无点） */
       children: []
     };
     while (stack[stack.length - 1].level >= level) stack.pop();
@@ -500,6 +509,12 @@ for (const n of shown) {
   const bad = isImp ? MAIN_BOLD_BAD : null;   /* 加粗栏绕开合成加粗坏字 */
   const name = document.createElement("div");
   name.className = "name"; setWrapped(name, n.name, true, bad);
+  if (n.fym) {   /* 死于非命：名栏末字下一点朱（CSS 画圆，无文字、不赖字体子集）；
+                    入名栏流故 nameH 自动含之——墨线下口、悬停障碍、行高皆自然避让 */
+    const dot = document.createElement("span");
+    dot.className = "fym";
+    name.appendChild(dot);
+  }
   d.appendChild(name);
   let pos = null, ti = null, rk = null, mo = null;
   if (throneTitle.has(n)) {
@@ -576,6 +591,14 @@ for (const n of shown) {
   });
   board.appendChild(d);
   els.set(n, d);
+  if (n.fym) {   /* 朱点横对中柱：vertical-align 之对齐有字体基线微差，
+                    以末字实测中线平移校准（一次性，改 font/zoom 不漂） */
+    const dot = name.lastElementChild;
+    const chs = name.querySelectorAll(".ch");
+    const lc = chs[chs.length - 1];
+    dot.style.marginLeft = (lc.offsetLeft + lc.offsetWidth / 2 -
+                            dot.offsetLeft - dot.offsetWidth / 2) + "px";
+  }
   n.nameH = name.offsetHeight;
   n.posH = pos ? pos.offsetHeight : 0;
   n.tiH = ti ? ti.offsetHeight : 0;
