@@ -7,23 +7,25 @@
 /* 默认显示缩放：长卷幅面巨大，开卷即半缩纵览（视觉等同浏览器 50%）。
    几何自洽——引擎量取与写入皆 offset 系（无 getBoundingClientRect），
    同处缩放子树内一个坐标空间，连线/箭镞/浮层随之等比、不错位。
-   方印、纸纹随页面同缩；水印独以 zoom:2 抵消、恒守 100% 视观（见
-   #watermark）。截图工具（tools/shot.mjs）锚点按 100% 标定，重跑需
+   方印、纸纹随页面同缩；水印与寻人件独以 zoom:var(--unzoom) 抵消、
+   恒守 100% 视观（见 #watermark、#seek；窄屏断点处 --unzoom 归 1）。
+   截图工具（tools/shot.mjs）锚点按 100% 标定，重跑需
    覆写 html{zoom:1} 或重测 */
 html { zoom: 0.5; }
 
-/* 主字库：文悦古体仿宋2；回落字库：霞鹜文楷等宽 Light。
-   上线用子集 woff2（全站现渲染用字＋兜底集，经 tools/subset-fonts.mjs
-   由同目录 otf/ttf 母本裁成，26MB/21MB → ~1MB，family 名不变）——
-   数据块增改用字后须重跑该工具再裁；母本 otf/ttf 仍随仓，供再裁剪 */
+/* 主字库：文悦古体仿宋2；回落字库：霞鹜文楷 Regular 子集（"LXGW WenKai
+   Fallback"，仅裁文悦缺字集，SIL OFL 1.1——通知文件 ../fonts/OFL-LXGWWenKai.txt）。
+   上线用子集 woff2（经 tools/subset-fonts.mjs 由同目录 otf/ttf 母本裁成，
+   family 名不变）——数据块增改用字后须重跑该工具再裁（并自动更新
+   lineage.js 之 MAIN_MISSING/RARE_INK 标记区）；母本仍随仓，供再裁剪 */
 @font-face {
   font-family: "文悦古体仿宋2";
   src: url("../fonts/wenyue-guti-fangsong-2.woff2") format("woff2");
   font-display: swap;
 }
 @font-face {
-  font-family: "LXGW WenKai Mono Light";
-  src: url("../fonts/LXGWWenKaiMono-Light.woff2") format("woff2");
+  font-family: "LXGW WenKai Fallback";
+  src: url("../fonts/LXGWWenKai-Regular.woff2") format("woff2");
   font-display: swap;
 }
 
@@ -87,12 +89,17 @@ svg { display: block; max-width: 100%; height: auto; }
   --han-ls-wide: 0.05em;
   --han-border-width-2: 2px;
 
-  /* 字体链：文悦古体仿宋2 优先，缺字落霞鹜文楷等宽 Light，
-     再落系统已装的霞鹜文楷等宽常规（Light 字库缺的罕字如「㰘」）；
-     两库俱缺之字（扩展B罕字如「」，霞鹜全系不收）再落宋体补足——
-     SimSun 承常用字、SimSun-ExtB 承扩展B、SimSun-ExtG 承扩展G，
-     显名在链、不恃浏览器末位兜底（规则：文悦→霞鹜→宋体，依次递补） */
-  --han-font-serif: "文悦古体仿宋2", "LXGW WenKai Mono Light", "LXGW WenKai Mono", "LXGW WenKai",
+  /* 反缩因子：水印/寻人件求视观 1:1，随根 zoom 反向抵消（根 .5 → 2）；
+     窄屏断点（文件尾 @media）根归 1 时随之归 1 */
+  --unzoom: 2;
+
+  /* 字体链（规则：文悦→霞鹜→宋体，依次递补）：文悦古体仿宋2 优先；
+     缺字落霞鹜文楷 Regular 子集网字（"LXGW WenKai Fallback"，仅裁文悦
+     缺字集），再落系统已装的霞鹜文楷诸名（子集外罕字如「㰘」）；
+     两库俱缺之扩展B/G罕字已改 RARE_INK 烘墨图（lineage.js 工具生成区，
+     全平台一致不恃观者字体），宋体级降为观者侧兜底——SimSun 承常用字、
+     SimSun-ExtB 承扩展B、SimSun-ExtG 承扩展G，显名在链、不恃浏览器末位兜底 */
+  --han-font-serif: "文悦古体仿宋2", "LXGW WenKai Fallback", "LXGW WenKai Mono", "LXGW WenKai",
                     "霞鹜文楷等宽", "霞鹜文楷", "Kaiti SC", "STKaiti", "KaiTi", "楷体",
                     "Songti SC", "STSong", "SimSun", "宋体", "NSimSun", "SimSun-ExtB",
                     "SimSun-ExtG", serif;
@@ -227,7 +234,7 @@ main { overflow-x: auto; overflow-y: hidden; }
 }
 
 /* ====== 世系节点：一格 = 一人，君主七栏（排行·位次·称号左、名字中、
-   母亲·即位·在位右；非君主无即位/在位两栏） ======
+   母亲·即位·在位右；不书年对者无即位/在位两栏） ======
    年号不另占栏：称号栏内朱色次run（数据以空格接写于称号后）；
    排行（左最外·黑）由引擎按父下齿序自动生成，父为帝者冠皇字；
    即位/在位（右·黑）出自君主行尾追加的即位年/在位年成对字段 */
@@ -280,11 +287,11 @@ main { overflow-x: auto; overflow-y: hidden; }
    Chromium 合成加粗描成空心），改 400 权重 + 描边仿粗，观感与邻字齐平；
    描边宽随字号（em），名字与小字栏同此一式 */
 .node.imp .bb { font-weight: 400; -webkit-text-stroke: .05em currentColor; }
-/* 回落字加粗暂策：霞鹜文楷等宽 Light 无 Bold 面，Chromium 合成加粗在部分
+/* 回落字加粗暂策：霞鹜文楷 Regular 子集无 Bold 面，Chromium 合成加粗在部分
    字形轮廓上出空心/淡痕（如「碽」），与主字库「氏」同病；真 Bold 面入库
-   （assets/fonts/LXGWWenKaiMono-Bold.ttf 注册 700）前的过渡——回落字在加粗
-   栏内走 400 + 描边仿粗；Light 底子比主字库细，描边单独校 .04em
-   （.05em 过粗、.03em 过轻），不与 .bb 同值 */
+   前的过渡——回落字在加粗栏内走 400 + 描边仿粗；描边 .04em 校准于旧 Light
+   面（.05em 过粗、.03em 过轻），Regular 底子略重，暂保值、用户目验后再调。
+   罕字墨图（.ink）之粗栏用预烘 b 描边变体，不经此规则 */
 .node.imp .fbc { font-weight: 400; -webkit-text-stroke: .04em currentColor; }
 
 /* ====== 代标：版框内最左「第壹代…」竖排，坐落该辈虚线行带左端外 ====== */
@@ -320,15 +327,42 @@ main { overflow-x: auto; overflow-y: hidden; }
 .node .name .ch:has(+ .fym) { margin-bottom: 0; }
 /* 回落字墨迹补偿：两字库竖排原点若有差，回落字位移对齐主字库墨线
    （换字库时此处要重新目验；初值 0） */
-/* 逐字回落：文悦古体仿宋2 缺字时，该字单独用霞鹜文楷等宽 Light，
+/* 逐字回落：文悦古体仿宋2 缺字时，该字单独用霞鹜文楷 Regular 子集，
    避免浏览器系统回落到竖排度量残缺的装饰字体而叠字；
-   霞鹜亦缺之字（扩展B等）顺落宋体/SimSun-ExtB 补足，链尾与 --han-font-serif 同序 */
+   子集外之字顺落系统霞鹜/宋体（链尾与 --han-font-serif 同序）；
+   两库俱缺之扩展B/G罕字不走此链——RARE_INK 烘墨图（见 .ink）。
+   横排化定谳（右偏之根）：无 VORG 之 TrueType 竖排原点系引擎合成，
+   WebKit/Gecko 与 Blink 不一；盒内改 horizontal-tb 定宽居中，字形落位
+   只恃横排 CJK 整形（各引擎一致），残余块轴偏差由 calibrateFallback()
+   （lineage.js）一次性 marginLeft 抹平。主字库文悦带 GSUB vert/vpal/vrt2、
+   竖排各引擎俱正，仍走竖排原路，勿动 */
 .fbc {
-  font-family: "LXGW WenKai Mono Light", "LXGW WenKai Mono", "LXGW WenKai",
+  font-family: "LXGW WenKai Fallback", "LXGW WenKai Mono", "LXGW WenKai",
                "霞鹜文楷等宽", "霞鹜文楷",
                "Songti SC", "STSong", "SimSun", "宋体", "NSimSun", "SimSun-ExtB",
                "SimSun-ExtG", serif;
+  display: inline-block;      /* writing-mode 不作用非替换内联盒，故立盒（兼及题识等非逐字栏） */
+  writing-mode: horizontal-tb;
+  width: 1em; text-align: center; line-height: 1;
+  vertical-align: middle;     /* 同 .fym 法：块轴取中，校准再抹残差 */
+  position: relative;         /* 校准以 left 平移（marginLeft 被 middle 对齐吃掉半程，见 calibrateFallback） */
 }
+
+/* 罕字墨图（两库俱缺之扩展B/G字，RARE_INK data-URI）：墨色烘入 PNG、
+   background 直挂——不用 mask-image（tools/make-mask.mjs 同由：Chromium 对
+   mask 图源行 CORS 校验，file:// 必拒；background 无此限，纸纹同法）。
+   真文本仍在 DOM（color:transparent 隐去）：无障碍/页内查找/子集采集可见。
+   换 --han-color-ink-800 令牌值需重跑 subset-fonts.mjs 重烘。
+   .ch.ink 自然承上诸 .ch 盒规则（尺寸/字距/末字归零） */
+.ink {
+  display: inline-block; width: 1em; height: 1em;
+  background-repeat: no-repeat; background-position: center;
+  background-size: 100% 100%;
+  color: transparent;
+  vertical-align: middle;     /* 竖排栏：块轴取中＋校准 */
+  position: relative;         /* 校准以 left 平移（.fbc 同理） */
+}
+#seek-list .ink { vertical-align: -0.125em; }   /* 横排小笺：坐基线如替换字形 */
 
 /* ====== 水印（可选，两式二择一） ======
    甲式 @watermark=中心字：蒸馏团窠——单线外环＋云龙环（蒸馏线描：波状身·
@@ -343,7 +377,7 @@ main { overflow-x: auto; overflow-y: hidden; }
    两式共用：固定视口居中、横滚长卷恒在、不入 pointer-events */
 #watermark {
   position: fixed; left: 50%; top: 50%;
-  zoom: 2;                       /* 抵消根部默认 50% 缩放：水印视观尺寸恒 100% 不缩 */
+  zoom: var(--unzoom);           /* 抵消根部默认 50% 缩放：水印视观尺寸恒 100% 不缩（窄屏断点归 1） */
   transform: translate(-50%, -50%);
   width: 55vmin; height: 55vmin;
   opacity: .05;
@@ -375,11 +409,13 @@ footer {
 /* ====== 寻人与深链（引擎生成，壳零改）：右下角朱印「尋」点开输入条，
    候选小笺列名＋称号＋代次；定位＝节点滚至视口居中＋朱晕呼吸两闪，
    君主顺手代钉传位层；#人名 深链开页即定位，点节点回写 hash ====== */
-/* 寻人件字体承 body 之 --han-font-serif（文悦→霞鹜→宋体三级递补，勿于
-   此件另立 font-family 断链；输入回显与候选小笺同享，扩展B罕字落宋体） */
+/* 寻人件字体承 body 之 --han-font-serif（文悦→霞鹜 Regular 子集→宋体
+   三级递补，勿于此件另立 font-family 断链）。候选小笺罕字走 RARE_INK
+   墨图（.ink span，emitInkText 发射）；输入框回显（value）无法逐字着墨，
+   罕字仍落字体链——iOS 无 SimSun-ExtB/G 则豆腐：已知且接受的边界 */
 #seek {
   position: fixed; right: 22px; bottom: 22px; z-index: 5;
-  zoom: 2;                        /* 抵消根部默认 50% 缩放：视观尺寸恒 1:1（水印同法） */
+  zoom: var(--unzoom);            /* 抵消根部默认 50% 缩放：视观尺寸恒 1:1（水印同法；窄屏断点归 1） */
   display: flex; flex-direction: row; align-items: flex-end; gap: 8px;
   /* 同排横陈：输入条在左、朱印「尋」恒居右（用户指名，不换行不上下叠） */
   opacity: .3; transition: opacity .25s ease;   /* 闲时自隐，不问世系图 */
@@ -435,4 +471,18 @@ footer {
 }
 @media (prefers-reduced-motion: reduce) {
   .node.found .name { animation: none; text-shadow: 0 0 10px 2px color-mix(in srgb, var(--han-color-vermilion-700) 60%, transparent); }
+}
+
+/* ===== 单断点响应（用户定谳：≤900px 即手机/竖持平板）：长卷改 1:1 原寸，
+   列宽 130px 在手机可读；反缩因子随之归 1（寻人件/水印本求视观 1:1）。
+   须置于文件尾——与两处 zoom 基声明同特异度，序后者胜。
+   引擎安全性：布局全用 px 常量＋offset 自洽系（文件头注），根 zoom 只改
+   视观比例、不入算；placeSeal 以 rect/layout 比值自适应任意 zoom；深链
+   scrollIntoView 不问缩放；横竖屏旋转跨断点只换视观比例，已写布局 px
+   恒有效，故无需 resize 监听。桌面（>900px）逐像素不变，shot.mjs 锚点
+   （1440 视口）不受影响。Firefox <126 不识别 zoom 属性→全站天然 1:1，
+   与本断点意图一致（优雅退化） */
+@media (max-width: 900px) {
+  html { zoom: 1; }
+  :root { --unzoom: 1; }
 }
