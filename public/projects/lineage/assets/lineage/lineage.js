@@ -1467,6 +1467,40 @@ document.addEventListener("keydown", function (ev) {
   }
 });
 
+/* ── 移动端辈分全览（粗指针设备）：根 zoom 收至世代纵深一屏 ──────────
+   手机浏览器双指缩小之下限恒＝「排版视口（meta width=device-width 之屏宽）
+   恰铺满屏幕」，与页面溢出内容多宽无涉——横滚长卷缩至 scale 1.0 即卡死，
+   只能放大不能缩小。对策：粗指针设备上行根 zoom＝屏高/板高（上限 1），
+   辈分行（上起世代）自上至下尽纳一屏——竖排世系有意义之全览即世代纵深
+   （板宽横比十六比一，整板入屏只余数 px 长条，不取）；横移浏览同辈仍走
+   main 横滚。双指缩小之下限遂即「纵深全览」，全览与细读之间任捻（放大＝
+   原生 visual viewport 缩放，与本 zoom 相乘）。桌面 html{zoom:.5} 同理：
+   zoom 只改视观比例不入算——offset 自洽系、placeSeal 之 rect/layout 比值、
+   calibrateFallback 皆 zoom 无关（css 尾断点注同旨）。#seek/#watermark 本
+   以 zoom:var(--unzoom) 抵根缩守恒视观 1:1——此处同步写 --unzoom=1/z；
+   fixed 定位之 right/bottom 长度在标准化 zoom 下不随根缩放（视观恒真 px，
+   探针实测），勿折算。仅在视宽变时重算（转屏即应；键盘开合/地址栏收展
+   只动高，不触发，免跳）。JS 未行则 css 尾断点（zoom:1 横滚）兜底同旧；
+   Firefox/旧 Webkit 不识 zoom 者天然 1:1，亦兜底态。 */
+const fitBoard = function () {
+  const root = document.documentElement;
+  const bH = board.offsetHeight;
+  if (!window.matchMedia("(pointer: coarse)").matches || !bH) {
+    root.style.zoom = "";
+    root.style.removeProperty("--unzoom");
+    return;
+  }
+  const z = Math.min(window.innerHeight / (bH + 1), 1);
+  root.style.zoom = z;
+  root.style.setProperty("--unzoom", String(1 / z));
+};
+fitBoard();
+let fitW = window.innerWidth;
+window.addEventListener("resize", function () {
+  if (window.innerWidth !== fitW) { fitW = window.innerWidth; fitBoard(); }
+});
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitBoard);
+
 /* 载入定位：有 #人名 深链先之（滚动归 locate 接管），无则居中对准主干
    （始祖居树宽正中，题识在右可滚见） */
 const hashName = decodeURIComponent((location.hash || "").slice(1));
