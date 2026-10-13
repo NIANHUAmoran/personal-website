@@ -704,8 +704,16 @@ groups.forEach(function (g) {
 
 /* 悬浮传位层：overlay 边＝名单顺接相邻对（@focus-skip 之前缀名单除外）
    ＋@throne-link 跨名单接续边；hover 或点击钉住名单成员时浮层：
-   朱线连以该节点为端点的顺接边，无关者半透明，墨线退为背景 */
+   朱线连以该节点为端点的顺接边，无关者半透明，墨线退为背景。
+   单人名单成员无顺接边，悬浮仍生效（2026-10-14 用户定谳）：只淡出
+   无关者、墨线退背景，不画朱线——悬浮资格以「在非 focus-skip 名单中」
+   （hoverables）为判，不赖边之有无 */
 const skip = new Set((meta["focus-skip"] || "").split(/[,,]/).map(function (s) { return s.trim(); }).filter(Boolean));
+const hoverables = new Set();   /* 非 @focus-skip 名单之全部已解析成员（含单人名单） */
+groups.forEach(function (g) {
+  if (skip.has(g.prefix)) return;
+  g.resolved.forEach(function (n) { if (n) hoverables.add(n); });
+});
 const focusEdges = [];
 groups.forEach(function (g) {
   if (skip.has(g.prefix)) return;
@@ -1095,7 +1103,9 @@ for (const n of shown) {
       （R3a 底出与 R1 同形之梳路；R2 邻格梳形顶/底入；R3b 顶出→目标行
       上廊→顶入；R3 侧出早升/早降→至目标行中线高横穿侧入）；
       侧出者附侧翼竖段两档（字格外 12px / 格外一格宽）。
-      候补逐段校验（穿障字格、与已画线相交或共线叠行均出局），洁净者中
+      候补逐段校验（穿障字格、与已画线相交或共线叠行均出局；唯同父兄弟
+      继任梳路之共轴出口段天生共干，叠不算重描——共干豁免，2026-10-14
+      用户定谳），洁净者中
       取转折最少，同折取少穿淡者，再同先列者优；末段行程不足 MIN_RUN（容不下箭镞）者
       降为次选，仅在无合格者时用；R1 梳路天生无穿，先画作底供后线避让；
       全部落选则回退标准路由并告警。
@@ -1329,8 +1339,16 @@ const routeOne = function (e, runs, taken, obs, dimObs) {
     shown.forEach(function (m) { if (ctx.indexOf(m) < 0) dimObs.push(obsRect(m)); });
     const taken = [];
     routed.forEach(function (r) {
-      if (r.e[0] === e[0] || r.e[1] === e[0] || r.e[0] === e[1] || r.e[1] === e[1])
-        taken.push.apply(taken, r.segs);
+      if (!(r.e[0] === e[0] || r.e[1] === e[0] || r.e[0] === e[1] || r.e[1] === e[1])) return;
+      /* 共干豁免（2026-10-14 用户定谳）：同父兄弟继任之父死子继梳路，
+         出口段（名柱底垂降廊道）天生共轴同迹——两朱线重合观感即一干
+         分叉（与墨梳同形），不计为重描。已路由边之出口段（首段、须为
+         父柱轴上之 V）不入本边互避；余段照常 */
+      const frat = r.e[0] === e[0] && r.e[1].parentD === r.e[0] && e[1].parentD === e[0];
+      r.segs.forEach(function (s, si) {
+        if (frat && si === 0 && s.o === "V" && s.x === r.e[0].nx) return;
+        taken.push(s);
+      });
     });
     const pick = routeOne(e, runs, taken, obs, dimObs);
     routed.push({ e: e, segs: pick.segs });
@@ -1354,7 +1372,7 @@ const applyFocus = function (node) {
   focusPath.setAttribute("d", edges.map(function (e) { return e.d; }).join(" "));
 };
 for (const n of shown) {
-  if (!focusInc.has(n)) continue;
+  if (!hoverables.has(n)) continue;   /* 单人名单成员亦挂悬浮（无边＝无朱线，淡出照旧） */
   const el = els.get(n);
   el.classList.add("hov");
   el.addEventListener("mouseenter", function () { hovered = n; if (!pinned) applyFocus(n); });
@@ -1448,7 +1466,7 @@ const locate = function (n) {
   el.classList.add("found");
   clearTimeout(foundTimer);
   foundTimer = setTimeout(function () { el.classList.remove("found"); }, 2400);
-  if (focusInc.has(n)) { pinned = n; applyFocus(n); }   /* 君主：代钉传位层 */
+  if (hoverables.has(n)) { pinned = n; applyFocus(n); }   /* 君主：代钉传位层（含单人名单） */
   setHash(n);
 };
 /* 深链回写：点任一节点即以其名入 hash（.hov 钉住监听另挂，同元素并存不悖） */
