@@ -1235,8 +1235,7 @@ select {
     gap: 0.7rem 1rem;
   }
 
-  .site-mark-note,
-  .github-label {
+  .site-mark-note {
     display: none;
   }
 
