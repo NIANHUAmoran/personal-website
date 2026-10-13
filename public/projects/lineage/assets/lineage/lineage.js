@@ -134,13 +134,16 @@ const SIDE_GAP = px("--lineage-side-gap");
 const FR_T = 14, FR_R = 14, FR_B = 14, FR_L = 64;
 
 /* ---------- 逐字回落判定：主字库文悦古体仿宋2 是否真含某字 ----------
-   两级判定：①确定性清单 MAIN_MISSING（工具以 fontTools 实测子集生成：
-   cmap 未登记 ∪ 登记但轮廓与 .notdef 逐字节同——源字库对缺字登记空框槽，
-   子集继承之）命中即缺，跨引擎一致；②未列者走 canvas 空框指纹探针兜底
-   （数据已改而工具未重跑之页）——该字库 cmap 对缺字也登记，「单字库 vs
+   两级判定：①确定性清单 MAIN_MISSING（工具以 fontTools 实测源字库生成：
+   cmap 未登记 ∪ 登记但轮廓与 .notdef 逐字节同——源字库对缺字登记空框槽）
+   命中即缺，跨引擎一致；②未列者走 canvas 空框指纹探针兜底
+   （数据已改而工具未重跑之页）——源字库 cmap 对缺字也登记，「单字库 vs
    字库链」比对会误判为含字，故比空框指纹；cmap 全未登记的字（如 BMP 外）
    canvas 静默回落，再比回落链指纹补判。探针恃引擎对非字符的 .notdef
-   渲染行为，Firefox 类引擎有误判之虞——清单在则不倚之。 */
+   渲染行为，Firefox 类引擎有误判之虞——清单在则不倚之。
+   注：2026-10-13 起子集分区，缺字已不入 woff2 子集 cmap（浏览器逐字回落
+   只看 cmap，未包裹语境遂天然落霞鹜一级）；本判定仍为板上 .fbc/.ink
+   逐字包裹之据——横排几何中和与粗栏描边仿粗，唯包裹可控。 */
 const probeCv = document.createElement("canvas");
 probeCv.width = probeCv.height = 96;
 const probeCtx = probeCv.getContext("2d", { willReadFrequently: true });
@@ -249,12 +252,14 @@ function setWrapped(el, text, perChar, badSet) {
 }
 
 /* 横排语境逐字发射（寻人候选小笺用）：罕字换 span.ink 烘墨图、主字库
-   缺字换 span.fbc 径落霞鹜（文悦子集对在册缺字承空框槽——浏览器逐字
-   回落只看 cmap、在册即止步画框，纯 CSS 链出「缺字」空框，故不得裸
-   文本任链自落），余常字发文本 run 原样。小笺横排语境之 .fbc 几何由
+   缺字换 span.fbc 径落霞鹜（子集分区后缺字已不在文悦 cmap，裸文本链亦
+   自落——包裹仍不可省：横排几何中和、粗栏 400＋.04em 描边仿粗，皆唯
+   包裹可控），余常字发文本 run 原样。小笺横排语境之 .fbc 几何由
    css `#seek-list .fbc` 中和为普通行内（竖排棋盘盒规不适用）。
-   输入框回显（<input> value）无法逐字着墨——罕字仍落字体链，iOS 无
-   SimSun-ExtB/G 则豆腐：已知且接受的边界（见 lineage.css #seek 注） */
+   输入框回显（<input> value）无法逐字着墨，赖分区天然回落：文悦缺字
+   由霞鹜子集承显；两库俱缺之罕字仍落字体链，Windows 观者得系统
+   SimSun-ExtB/G 实形，iOS 无之则豆腐：已知且接受的边界（见 lineage.css
+   #seek 注） */
 const emitInkText = function (el, text, bold) {
   let run = "";
   const flush = function () {

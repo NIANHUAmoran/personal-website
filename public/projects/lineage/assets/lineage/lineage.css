@@ -17,15 +17,18 @@ html { zoom: 0.5; }
    Fallback"，仅裁文悦缺字集，SIL OFL 1.1——通知文件 ../fonts/OFL-LXGWWenKai.txt）。
    上线用子集 woff2（经 tools/subset-fonts.mjs 由同目录 otf/ttf 母本裁成，
    family 名不变）——数据块增改用字后须重跑该工具再裁（并自动更新
-   lineage.js 之 MAIN_MISSING/RARE_INK 标记区）；母本仍随仓，供再裁剪 */
+   lineage.js 之 MAIN_MISSING/RARE_INK 标记区）；母本仍随仓，供再裁剪。
+   子集分区（2026-10-13）：缺字不入文悦子集 cmap、两库俱缺字不入霞鹜
+   子集 cmap——浏览器逐字回落只看 cmap，不入册则链自落下一级（输入框
+   value 等未包裹语境赖此）；woff2 内容变更须同步进 src 之 ?v= 令牌破缓存 */
 @font-face {
   font-family: "文悦古体仿宋2";
-  src: url("../fonts/wenyue-guti-fangsong-2.woff2") format("woff2");
+  src: url("../fonts/wenyue-guti-fangsong-2.woff2?v=20261013g") format("woff2");
   font-display: swap;
 }
 @font-face {
   font-family: "LXGW WenKai Fallback";
-  src: url("../fonts/LXGWWenKaiMono-Light.woff2") format("woff2");
+  src: url("../fonts/LXGWWenKaiMono-Light.woff2?v=20261013g") format("woff2");
   font-display: swap;
 }
 
@@ -94,8 +97,9 @@ svg { display: block; max-width: 100%; height: auto; }
   --unzoom: 2;
 
   /* 字体链（规则：文悦→霞鹜→宋体，依次递补）：文悦古体仿宋2 优先；
-     缺字落霞鹜文楷等宽 Light 子集网字（"LXGW WenKai Fallback"，仅裁文悦
-     缺字集），再落系统已装的霞鹜文楷诸名（子集外罕字如「㰘」）；
+     缺字落霞鹜文楷等宽 Light 子集网字（"LXGW WenKai Fallback"，仅裁
+     「文悦缺而霞鹜有实形」者——子集分区使缺字不在文悦 cmap，链自落于此），
+     再落系统已装的霞鹜文楷诸名（子集外罕字如「㰘」）；
      两库俱缺之扩展B/G罕字已改 RARE_INK 烘墨图（lineage.js 工具生成区，
      全平台一致不恃观者字体），宋体级降为观者侧兜底——SimSun 承常用字、
      SimSun-ExtB 承扩展B、SimSun-ExtG 承扩展G，显名在链、不恃浏览器末位兜底 */
@@ -426,10 +430,11 @@ footer {
    君主顺手代钉传位层；#人名 深链开页即定位，点节点回写 hash ====== */
 /* 寻人件字体承 body 之 --han-font-serif（文悦→霞鹜 Light 子集→宋体
    三级递补，勿于此件另立 font-family 断链）。候选小笺罕字走 RARE_INK
-   墨图（.ink span）、文悦缺字走 .fbc 逐字回落（皆 emitInkText 发射——
-   文悦子集对在册缺字承空框槽，纯 CSS 链浏览器只看 cmap 即止步空框，
-   故小笺不得裸文本任链自落）；输入框回显（value）无法逐字着墨，
-   罕字仍落字体链——iOS 无 SimSun-ExtB/G 则豆腐：已知且接受的边界 */
+   墨图（.ink span）、文悦缺字走 .fbc 逐字包裹（皆 emitInkText 发射——
+   子集分区后缺字已不在文悦 cmap，包裹为横排几何中和与粗栏描边仿粗）；
+   输入框回显（value）无法逐字着墨，赖分区天然回落霞鹜子集（熜等字）；
+   两库俱缺之罕字仍落字体链——Windows 观者得系统 SimSun-ExtB/G 实形，
+   iOS 无之则豆腐：已知且接受的边界 */
 #seek {
   position: fixed; right: 22px; bottom: 22px; z-index: 5;
   zoom: var(--unzoom);            /* 抵消根部默认 50% 缩放：视观尺寸恒 1:1（水印同法；窄屏断点归 1） */
