@@ -1575,4 +1575,92 @@ if (hashHit) {
   main.scrollLeft = Math.max(0, ORIGIN + dRoot.w / 2 - main.clientWidth / 2);
 }
 
+/* ── 触屏缩放（方案A，2026-10-14；渐进增强：仅 (pointer:coarse) 端启用） ──
+   手机上 viewport width=device-width 把页面级捏合钳在 scale=1，缩不了；
+   而 main 横滚裁切长卷，纵能放大页面也见不到更多列——故令 #board 自身
+   为缩放面：board.style.zoom 行内直写（与根 zoom 相乘；窄屏断点根归 1，
+   即所见倍率）。双指捏合按比例调焦，锚点＝捏合中点下 board 坐标不动
+   （touch-action: pan-x pan-y 保单指原生平移，双指事件可取消、归 JS）；
+   左下角工具条：全卷（整幅宽纳入视口）／−／读数（点按＝复位 100%）／＋。
+   坐标系换算：clientX 为视观 px，scrollLeft/offset 为布局 px，两者差一
+   根 zoom 因子（桌面 0.5／窄屏 1），rootZoom() 取之换算。
+   引擎安全性：布局全用 px 常量＋offset 自洽系（文件头注），board zoom
+   只改视观比例、不入算；placeSeal 以 rect/layout 比值自适应任意 zoom；
+   已知边界：locate() 深链定位未乘 board zoom 因子，缩放态下寻人定位或
+   偏（复位后即正），v1 接受。
+   无损回退：细指针端立即 return——不挂 DOM、不写行内样式，桌面零变化；
+   触屏端一切效果皆行内 style.zoom ＋动态挂载节点，删本节（git revert
+   本提交）即还原，CSS 侧 #zoom-bar 规则空转无害 */
+if (window.matchMedia && matchMedia("(pointer: coarse)").matches) {
+
+  const ZMIN = 0.005, ZMAX = 2, STEP = 1.3;
+  let bz = 1;                        /* board zoom 现行倍率（1＝原寸，行内样式为空） */
+  const rootZoom = function () {     /* 根 zoom：视观 px → 布局 px 换算因子 */
+    const rz = parseFloat(getComputedStyle(document.documentElement).zoom);
+    return (rz > 0) ? rz : 1;
+  };
+
+  const bar = document.createElement("div");
+  bar.id = "zoom-bar";
+  bar.setAttribute("role", "toolbar");
+  bar.setAttribute("aria-label", "长卷缩放");
+  const mkBtn = function (id, text, label) {
+    const b = document.createElement("button");
+    b.type = "button"; b.id = id; b.textContent = text;
+    b.title = label; b.setAttribute("aria-label", label);
+    bar.appendChild(b);
+    return b;
+  };
+  const fitBtn = mkBtn("zoom-fit", "全卷", "全卷：整幅长卷缩纳入屏");
+  const outBtn = mkBtn("zoom-out", "−", "缩小");
+  const rstBtn = mkBtn("zoom-readout", "100%", "复位：回到原寸（100%）");
+  const inBtn  = mkBtn("zoom-in", "＋", "放大");
+  document.body.appendChild(bar);
+
+  const setZoom = function (nz, anchorClientX) {
+    nz = Math.min(ZMAX, Math.max(ZMIN, nz));
+    if (Math.abs(nz - bz) < 1e-4) return;
+    const rz = rootZoom();
+    const rect = main.getBoundingClientRect();
+    /* 锚点：视观 clientX → main 内布局偏移 lo（缺省＝视口中心） */
+    const lo = anchorClientX == null
+      ? main.clientWidth / 2
+      : (anchorClientX - rect.left) / rz;
+    const bp = (main.scrollLeft + lo) / bz;     /* 锚点下的 board 坐标 */
+    bz = nz;
+    if (bz === 1) board.style.zoom = "";        /* 复位＝清空行内，还原原样 */
+    else board.style.zoom = String(bz);
+    main.scrollLeft = Math.max(0, bp * bz - lo);  /* 锚点复归指下 */
+    rstBtn.textContent = Math.round(bz * 100) + "%";
+  };
+
+  /* 双指捏合：起手记基距/基倍率/锚点，行中按距比调焦 */
+  let pinching = false, baseDist = 0, baseZ = 1, anchorVis = 0;
+  const tdist = function (t) {
+    return Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+  };
+  main.addEventListener("touchstart", function (e) {
+    if (e.touches.length === 2) {
+      pinching = true;
+      baseDist = tdist(e.touches) || 1;
+      baseZ = bz;
+      anchorVis = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+    }
+  }, { passive: true });
+  main.addEventListener("touchmove", function (e) {
+    if (!pinching || e.touches.length !== 2) return;
+    e.preventDefault();               /* touch-action 已豁免双指，事件可取消 */
+    setZoom(baseZ * tdist(e.touches) / baseDist, anchorVis);
+  }, { passive: false });
+  const pinchEnd = function (e) { if (e.touches.length < 2) pinching = false; };
+  main.addEventListener("touchend", pinchEnd, { passive: true });
+  main.addEventListener("touchcancel", pinchEnd, { passive: true });
+
+  fitBtn.addEventListener("click", function () { setZoom(main.clientWidth / boardW, null); });
+  outBtn.addEventListener("click", function () { setZoom(bz / STEP, null); });
+  inBtn.addEventListener("click",  function () { setZoom(bz * STEP, null); });
+  rstBtn.addEventListener("click", function () { setZoom(1, null); });
+  bar.addEventListener("click", function (ev) { ev.stopPropagation(); });  /* 不触「点空白解除钉住」 */
+}
+
 })();

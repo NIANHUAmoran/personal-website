@@ -514,7 +514,8 @@ footer {
 
 /* ===== 单断点响应（用户定谳：≤900px 即手机/竖持平板）：长卷改 1:1 原寸，
    列宽 130px 在手机可读；反缩因子随之归 1（寻人件/水印本求视观 1:1）。
-   须置于文件尾——与两处 zoom 基声明同特异度，序后者胜。
+   须置于文件尾——与两处 zoom 基声明同特异度，序后者胜（其后所附触屏
+   缩放件一节不含任何 html/根 zoom 基声明，序后原则不受扰）。
    引擎安全性：布局全用 px 常量＋offset 自洽系（文件头注），根 zoom 只改
    视观比例、不入算；placeSeal 以 rect/layout 比值自适应任意 zoom；深链
    scrollIntoView 不问缩放；横竖屏旋转跨断点只换视观比例，已写布局 px
@@ -524,4 +525,43 @@ footer {
 @media (max-width: 900px) {
   html { zoom: 1; }
   :root { --unzoom: 1; }
+}
+
+/* ====== 触屏缩放件（方案A，2026-10-14）：仅 (pointer:coarse) 端由 lineage.js
+   生成 #zoom-bar 挂 body——细指针端无此节点，本节规则空转，桌面逐像素不变
+   （上一断点的 html{zoom} 序后原则不受扰：本节不再声明任何 zoom 基值）。
+   左下角横陈，垫于寻人件输入行上方一行（寻人件行高 34＋隙 8＝64，
+   同左缘则两不相犯）；纸墨同基：米纸底、墨线框、朱色按压回馈。
+   触屏无 hover，闲时常驻 55%（寻人件 30% 赖 hover 复全，触屏无之）；
+   zoom:var(--unzoom) 与寻人/水印同法：视观尺寸恒 1:1
+   （窄屏断点 --unzoom 归 1，正是手机实寸）。缩放本体＝board 行内
+   style.zoom（引擎行内直写，复位即清空），不经 CSS 变量，回退无痕 ====== */
+#zoom-bar {
+  position: fixed; left: 22px; bottom: 64px; z-index: 5;
+  zoom: var(--unzoom);
+  display: flex; align-items: center; gap: 6px;
+  opacity: .55; transition: opacity .25s ease;
+}
+#zoom-bar:focus-within { opacity: 1; }
+#zoom-bar button {
+  font: inherit; font-size: 15px; line-height: 1;
+  min-width: 34px; height: 34px; box-sizing: border-box;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 7px;
+  color: var(--han-color-ink-800);
+  background: color-mix(in srgb, #fffdf7 88%, transparent);
+  border: 1px solid color-mix(in srgb, var(--han-color-ink-800) 40%, transparent);
+  border-radius: 4px; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+#zoom-bar button:active {
+  color: var(--han-color-vermilion-700);
+  background: color-mix(in srgb, var(--han-color-vermilion-700) 12%, #fffdf7);
+  border-color: var(--han-color-vermilion-700);
+}
+#zoom-bar #zoom-readout { font-size: 12px; min-width: 48px; }
+/* 双指捏合交给 JS 自绘缩放，单指仍归原生平移（media 圈定：细指针端
+   touch-action 保持 auto 原样，桌面触屏笔 mouse 事件本不受 touch-action 影响） */
+@media (pointer: coarse) {
+  main { touch-action: pan-x pan-y; }
 }
