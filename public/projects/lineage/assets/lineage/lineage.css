@@ -23,12 +23,12 @@ html { zoom: 0.5; }
    value 等未包裹语境赖此）；woff2 内容变更须同步进 src 之 ?v= 令牌破缓存 */
 @font-face {
   font-family: "文悦古体仿宋2";
-  src: url("../fonts/wenyue-guti-fangsong-2.woff2?v=20261013g") format("woff2");
+  src: url("../fonts/wenyue-guti-fangsong-2.woff2?v=20261014a") format("woff2");
   font-display: swap;
 }
 @font-face {
   font-family: "LXGW WenKai Fallback";
-  src: url("../fonts/LXGWWenKaiMono-Light.woff2?v=20261013g") format("woff2");
+  src: url("../fonts/LXGWWenKaiMono-Light.woff2?v=20261014a") format("woff2");
   font-display: swap;
 }
 
@@ -297,6 +297,23 @@ main { overflow-x: auto; overflow-y: hidden; }
    Light 面（.05em 过粗、.03em 过轻）。罕字墨图（.ink）之粗栏用预烘 b
    描边变体，不经此规则 */
 .node.imp .fbc { font-weight: 400; -webkit-text-stroke: .04em currentColor; }
+/* 无合成加粗之引擎（典型：iOS WebKit——对无 Bold 面网字体不合成粗，700
+   渲染与 400 全同，君主行/大题/代标/朱印/小笺名诸处加粗皆不可感知；
+   引擎系谱不可恃，Windows 版 WebKit 仿形实测有合成，故行为探测定谳）：
+   lineage.js canvas 探针后挂 html.nosyn，七处 700 一律改 400＋描边
+   仿粗，用 .bb 既有校准常量 .05em（Chromium 合成粗实测齐平）；.bb/.fbc
+   子件自有描边规则，直配必胜继承、不受染；有合成之引擎不挂类，桌面观感
+   像素不动（见 lineage.js 合成加粗探测注） */
+.nosyn #heading h1,
+.nosyn .gen,
+.nosyn #seek-seal,
+.nosyn #seek-list button b,
+.nosyn .node.imp .name, .nosyn .node.imp .pos, .nosyn .node.imp .ti,
+.nosyn .node.imp .mo, .nosyn .node.imp .rk, .nosyn .node.imp .ji,
+.nosyn .node.imp .zai, .nosyn .node.imp .yr {
+  font-weight: 400;
+  -webkit-text-stroke: .05em currentColor;
+}
 
 /* ====== 代标：版框内最左「第壹代…」竖排，坐落该辈虚线行带左端外 ====== */
 .gen {
