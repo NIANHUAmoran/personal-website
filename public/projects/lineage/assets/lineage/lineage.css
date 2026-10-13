@@ -362,7 +362,10 @@ main { overflow-x: auto; overflow-y: hidden; }
   vertical-align: middle;     /* 竖排栏：块轴取中＋校准 */
   position: relative;         /* 校准以 left 平移（.fbc 同理） */
 }
-#seek-list .ink { vertical-align: -0.125em; }   /* 横排小笺：坐基线如替换字形 */
+/* 横排小笺：坐基线如替换字形。-0.25em 系行级像素审计定值（dsf=2 屏摄
+   逐字墨迹 bbox：墨图字心原偏高邻字均 1.65css px@13px——合成加粗与墨图
+   光学心不坐理想盒心，画布盒位模型量不到，唯像素定谳） */
+#seek-list .ink { vertical-align: -0.25em; }
 /* 小笺回落字横排行内化：.fbc 之竖排棋盘几何（inline-block 定宽 1em、
    middle 块轴取中、relative 候校准平移）系竖排栏专用，横排小笺只承其
    font-family（链首霞鹜 Light 子集），余皆中和为普通行内流——校准
