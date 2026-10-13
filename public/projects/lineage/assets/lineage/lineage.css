@@ -442,7 +442,7 @@ footer {
 #seek-seal {
   width: 34px; height: 34px;
   display: flex; align-items: center; justify-content: center;
-  font: inherit; font-size: 19px; font-weight: 700;
+  font: inherit; font-size: 18px; font-weight: 700;
   color: var(--han-color-vermilion-700);
   background: color-mix(in srgb, #fffdf7 88%, transparent);
   border: 2px solid var(--han-color-vermilion-700); border-radius: 4px;
@@ -451,7 +451,7 @@ footer {
 #seek-seal:hover { background: color-mix(in srgb, var(--han-color-vermilion-700) 10%, #fffdf7); }
 #seek-panel { display: flex; flex-direction: column; gap: 6px; width: 240px; }
 #seek-input {
-  font: inherit; font-size: 14px;
+  font: inherit; font-size: 13px;
   height: 34px; box-sizing: border-box;   /* 与朱印等高齐脚，同排成一行 */
   padding: 5px 9px;
   color: var(--han-color-ink-800);
@@ -469,7 +469,7 @@ footer {
 }
 #seek-list button {
   display: block; width: 100%;
-  font: inherit; font-size: 13px; text-align: left;
+  font: inherit; font-size: 12px; text-align: left;
   padding: 4px 9px; border: 0; background: none; cursor: pointer;
   color: var(--han-color-ink-800);
 }
@@ -477,7 +477,7 @@ footer {
 #seek-list button.sel { background: color-mix(in srgb, var(--han-color-vermilion-700) 12%, transparent); }
 #seek-list button:hover { background: color-mix(in srgb, var(--han-color-vermilion-700) 7%, transparent); }
 #seek-list .none {
-  padding: 4px 9px; font-size: 13px;
+  padding: 4px 9px; font-size: 12px;
   color: color-mix(in srgb, var(--han-color-ink-700) 62%, transparent);
 }
 /* 定位闪：名柱朱晕呼吸两息即散（不夺墨字本色，只借光） */
