@@ -498,13 +498,7 @@ footer {
    scrollIntoView 不问缩放；横竖屏旋转跨断点只换视观比例，已写布局 px
    恒有效，故无需 resize 监听。桌面（>900px）逐像素不变，shot.mjs 锚点
    （1440 视口）不受影响。Firefox <126 不识别 zoom 属性→全站天然 1:1，
-   与本断点意图一致（优雅退化）。
-   移动端追加（2026-10-13）：粗指针设备上引擎 fitBoard() 以内联 zoom 覆写
-   本断点（内联恒胜），收至世代纵深一屏全览（板宽横比过巨，全宽入屏不取）
-   ——双指缩小下限系「排版视口铺屏」而非「溢出内容铺屏」，1:1 横滚长卷
-   在手机永缩不出全板，唯根 zoom 预缩可解；--unzoom 由 fitBoard 同步写
-   （fixed 边距在标准化 zoom 下不随根缩，勿折算）。本断点即 JS 未行之兜底，
-   详 lineage.js fitBoard 头注 */
+   与本断点意图一致（优雅退化） */
 @media (max-width: 900px) {
   html { zoom: 1; }
   :root { --unzoom: 1; }
