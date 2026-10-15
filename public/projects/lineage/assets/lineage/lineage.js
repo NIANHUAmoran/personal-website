@@ -1256,9 +1256,16 @@ const routeEdge = function (e, runs) {
     return "M" + a.portL + " " + y + " H" + b.portR + arrowL(b.portR, y);
   }
   if (b.depth > a.depth) {                      /* R3a 继任在下：侧出→水平→顶入 */
+    const yB = levelTop[b.depth] - LINE_GAP;
+    if (b.nx === a.nx) {                        /* 同柱正下退化（如祖→孙隔代继，成皋 載垸→常㳛 例）：
+                                                   侧口出线之横段必回穿自身字格（端点豁免致 R7 不拦、
+                                                   折少反胜），多出一段骑名横担——改沿 R1 梳路轴底出
+                                                   直降顶入（朱覆墨重描、零横段）2026-10-16 */
+      const yA = levelTop[a.depth] + a.nameH + LINE_GAP;
+      return "M" + a.nx + " " + yA + " V" + yB + arrowD(a.nx, yB);
+    }
     const y = nameMidY(a);
     const sx = b.nx > a.nx ? a.portR : a.portL;
-    const yB = levelTop[b.depth] - LINE_GAP;
     return "M" + sx + " " + y + " H" + b.nx + " V" + yB + arrowD(b.nx, yB);
   }
   {                                             /* R3b 继任在上：侧出→水平→垂直→侧入（R5 竖让、R6 跨让） */
@@ -1782,7 +1789,15 @@ const closePanel = function () {
   panel.hidden = true;
   sealBtn.setAttribute("aria-expanded", "false");
 };
-const choose = function (n) { closePanel(); locate(n); };
+/* 择条跳转即清零复未响应（2026-10-16 用户定谳：整条收起＋清空）：
+   旧查询字与旧榜不留——重开朱印/「/」得空白输入条、无小笺；
+   年深链载入预填同例（载入开榜照旧，点条跳转后一视同仁清空）。
+   点结果条与输入框 Enter 择条同走此函，一并生效 */
+const choose = function (n) {
+  input.value = "";
+  recalc();                       /* hits 归空、小笺隐、yearMode 复位（seekMatch 空串守卫，廉价） */
+  closePanel(); locate(n);
+};
 const openPanel = function () {
   panel.hidden = false;
   sealBtn.setAttribute("aria-expanded", "true");
