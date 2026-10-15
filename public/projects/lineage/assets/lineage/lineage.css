@@ -23,12 +23,12 @@ html { zoom: 0.5; }
    value 等未包裹语境赖此）；woff2 内容变更须同步进 src 之 ?v= 令牌破缓存 */
 @font-face {
   font-family: "文悦古体仿宋2";
-  src: url("../fonts/wenyue-guti-fangsong-2.woff2?v=20261014c") format("woff2");
+  src: url("../fonts/wenyue-guti-fangsong-2.woff2?v=20261015a") format("woff2");
   font-display: swap;
 }
 @font-face {
   font-family: "LXGW WenKai Fallback";
-  src: url("../fonts/LXGWWenKaiMono-Light.woff2?v=20261014c") format("woff2");
+  src: url("../fonts/LXGWWenKaiMono-Light.woff2?v=20261015a") format("woff2");
   font-display: swap;
 }
 
@@ -161,6 +161,14 @@ main { overflow-x: auto; overflow-y: hidden; }
 .node { transition: opacity .15s ease; }
 .node.dim { opacity: .25; }
 .node.hov { cursor: pointer; }
+/* 键盘导航焦点框（2026-10-15，引擎漫游 tabindex）：朱色虚线圈名字栏——
+   与 found 朱晕（定位闪）判然。:focus-visible 只应键盘驱动之焦点，鼠标
+   点击不扰；节点盒自身零高（诸栏绝对定位），框故落实体可见之名栏 */
+.node:focus { outline: none; }
+.node:focus-visible .name {
+  outline: 1px dashed color-mix(in srgb, var(--han-color-vermilion-700) 78%, transparent);
+  outline-offset: 3px;
+}
 /* 朱色传位线：浮层正交肘线＋收端箭镞（仅 hover/钉住态存在） */
 #lines path.focus {
   stroke: var(--han-color-vermilion-700);
