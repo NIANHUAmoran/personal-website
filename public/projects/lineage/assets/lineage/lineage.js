@@ -1726,7 +1726,7 @@ const list = document.createElement("div");
 list.id = "seek-list"; list.hidden = true;
 const input = document.createElement("input");
 input.id = "seek-input"; input.type = "text";
-input.placeholder = "姓名·稱號·年號·生母·年份"; input.autocomplete = "off";
+input.placeholder = "姓名·稱號·生母·年號·年份"; input.autocomplete = "off";
 input.setAttribute("aria-label", "尋人：按姓名、稱號、年號、生母或年份（如 1617年、壹陸壹柒年、前221年）檢索");
 panel.appendChild(list); panel.appendChild(input);
 const sealBtn = document.createElement("button");
