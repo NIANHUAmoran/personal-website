@@ -1321,7 +1321,8 @@ const segsOverlap = function (s1, s2) {   /* 同向共线叠行（朱线重描�
    名柱经辈间廊道横穿（底出配本辈下廊、顶出配上辈上廊，免穿自身字格）；
    同层边另附梳形顶/底入两式（邻格专备，见 R2）；侧出者附侧翼竖段两档
    （字格外 12px / 格外一格宽）与早升/早降侧入（R3，侧出即升/降至
-   目标行中线高横穿侧入）。当选以洁净候补中转折最少、末段行程
+   目标行中线高横穿侧入）、晚升/晚降侧入（竖段改贴目标受缘外两档，
+   长横先行——与早式同折而得零穿者，2026-10-18 补族）。当选以洁净候补中转折最少、末段行程
    ≥ MIN_RUN 者（同折取少穿淡者，再同先列者优，标准路由天然同数即胜） */
 const routeCandidates = function (e, runs) {
   const a = e[0], b = e[1];
@@ -1363,6 +1364,12 @@ const routeCandidates = function (e, runs) {
     const arrS = right ? arrowR(inn, yT) : arrowL(inn, yT);
     FLANKS.forEach(function (off) {
       cands.push("M" + sx + " " + yA + " H" + (sx + sgn * off) + " V" + yT + " H" + inn + arrS);
+    });
+    /* 晚降侧入（与 R3b 贴目标受缘竖段对称）：长横先行越过障碍，竖段贴
+       目标受缘外短距处直降，短横即入——与早降同折；早降骑淡名时此式
+       零穿即胜（見潚→祐橺 穿祐欘/祐棿 例，2026-10-18 用户定谳补族） */
+    FLANKS.forEach(function (off) {
+      cands.push("M" + sx + " " + yA + " H" + (inn - sgn * off) + " V" + yT + " H" + inn + arrS);
     });
     cands.push("M" + a.nx + " " + yBot + " V" + railDn + topIn);   /* 底出梳路（与 R1 同形） */
     FLANKS.forEach(function (off) {
