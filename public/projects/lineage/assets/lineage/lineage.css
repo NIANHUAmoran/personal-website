@@ -23,12 +23,12 @@ html { zoom: 0.5; }
    value 等未包裹语境赖此）；woff2 内容变更须同步进 src 之 ?v= 令牌破缓存 */
 @font-face {
   font-family: "文悦古体仿宋2";
-  src: url("../fonts/wenyue-guti-fangsong-2.woff2?v=20261018e") format("woff2");
+  src: url("../fonts/wenyue-guti-fangsong-2.woff2?v=20261018g") format("woff2");
   font-display: swap;
 }
 @font-face {
   font-family: "LXGW WenKai Fallback";
-  src: url("../fonts/LXGWWenKaiMono-Light.woff2?v=20261018e") format("woff2");
+  src: url("../fonts/LXGWWenKaiMono-Light.woff2?v=20261018g") format("woff2");
   font-display: swap;
 }
 
@@ -114,7 +114,13 @@ svg { display: block; max-width: 100%; height: auto; }
      列间纯留白（无通道机器）；辈分行间距为父子墨横担之廊 */
   --lineage-col-w:  130px;  /* 单人横向占宽（位次·称号左 + 名字中 + 排行·母亲右） */
   --lineage-gap-y:  52px;   /* 辈分行间距（父子墨横担之廊） */
-  --lineage-gap-x:  40px;   /* 列间距（纯留白；邻君七栏墨隙 32px 之基） */
+  --lineage-gap-x:  44px;   /* 列间距（纯留白）。2026-10-18 用户定谳抬升至
+                               「邻格直横连下限」恰达值：最窄邻格盒隙 20→24px
+                               （= MIN_RUN 16＋气口 8）则直连 0 折恒为正选
+                               （見滃→見沂、祐材→祐櫍 旧 20px 盒隙落次选之
+                               丑线同愈）。邻君七栏墨隙＝本值 − 8 派生：现 36px。
+                               【回退锚】抬升前 40px ↔ 墨隙 32px——墨隙不
+                               满意时改回 40 即全量复原（本常量单点原子） */
   --lineage-off-y:  40px;   /* 首行上垫 */
   --lineage-side-gap: 6px;  /* 侧栏与名字之间的贴距（空栏向内递补时逐栏累加） */
   --lineage-guard:  32px;   /* 版框线与任何字盒的最小净距（结构保护） */
