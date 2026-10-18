@@ -23,12 +23,12 @@ html { zoom: 0.5; }
    value 等未包裹语境赖此）；woff2 内容变更须同步进 src 之 ?v= 令牌破缓存 */
 @font-face {
   font-family: "文悦古体仿宋2";
-  src: url("../fonts/wenyue-guti-fangsong-2.woff2?v=20261018c") format("woff2");
+  src: url("../fonts/wenyue-guti-fangsong-2.woff2?v=20261018e") format("woff2");
   font-display: swap;
 }
 @font-face {
   font-family: "LXGW WenKai Fallback";
-  src: url("../fonts/LXGWWenKaiMono-Light.woff2?v=20261018c") format("woff2");
+  src: url("../fonts/LXGWWenKaiMono-Light.woff2?v=20261018e") format("woff2");
   font-display: swap;
 }
 
