@@ -80,6 +80,10 @@
  *             （定位后地址栏回写主名）；候选小笺仍只显主名。
  *             匹配规则同 @throne：裸名须全树唯一，重名赖称号甄别，
  *             歧义或无人匹配经告警跳过
+ * @gen-first=主名[|称号]  代数编号锚（2026-10-20 用户定谳）：该人所在辈＝
+ *             第壹代，其上诸辈不占代数（代标带整带留空白，候选小笺代数行
+ *             同略）；无此行或匹配失败＝根为第壹代（旧态，清/晋壳不受扰）。
+ *             匹配规则同 @alias；多行书之后行覆盖前行
  * ============================================================ */
 "use strict";
 
@@ -452,7 +456,7 @@ const hanDigits = function (y) {
    （名栏末字下缀一点朱）与 無嗣（排行栏末缀「無嗣」，显示统一繁体）
    ——均简繁并认、均不占栏位；@alias 别名条只入检索不渲染 */
 function parseData(text) {
-  const meta = { title: "", subtitle: "", juan: "", leaf: "", seal: "", thrones: [], aliases: [] };
+  const meta = { title: "", subtitle: "", juan: "", leaf: "", seal: "", thrones: [], aliases: [], genFirst: "" };
   const root = { name: "", ti: "", nh: "", mo: "", children: [] };
   const stack = [{ node: root, level: -1 }];
   for (const raw of text.split(/\r?\n/)) {
@@ -460,9 +464,10 @@ function parseData(text) {
     const t = line.trim();
     if (!t || t.startsWith("#")) continue;
     if (t.startsWith("@")) {
-      const m = t.match(/^@(title|subtitle|juan|leaf|seal|rank-word|prince-prefix|focus-skip|watermark|watermark-art|throne-link|throne[^=]*|alias)=(.*)$/);
+      const m = t.match(/^@(title|subtitle|juan|leaf|seal|rank-word|prince-prefix|focus-skip|watermark|watermark-art|throne-link|throne[^=]*|alias|gen-first)=(.*)$/);
       if (m) {
         if (m[1] === "alias") meta.aliases.push(m[2].trim());   /* 别名条可多行，按书写序 */
+        else if (m[1] === "gen-first") meta.genFirst = m[2].trim();   /* 代数锚，多行后覆前 */
         else if (m[1] !== "throne-link" && m[1].startsWith("throne")) {
           /* @throneN 键号＝检索排序级（2026-10-15 用户定谳）：@throne＝1级
              （帝王）、@throne2＝2级（藩王）、@throne3＝3级（郡王），越号照
@@ -693,6 +698,21 @@ if (!root) {
    母亲·即位·在位右；即位/在位君主/藩王行尾书年段者有）；测量格高 */
 const nodes = [];
 collect(root, 0, nodes);
+
+/* 代数编号锚（@gen-first=主名[|称号]，2026-10-20 用户定谳）：该人所在辈＝
+   第壹代，其上诸辈不占代数（代标带留空白，小笺代数行同略）；无此行或匹配
+   失败＝锚 0（根为第壹代，旧态）。匹配规则同 @alias：带称号按 name+ti 甄别，
+   裸名须全树唯一；歧义/无人告警后按无锚视 */
+let GEN_ANCHOR = 0;
+if (meta.genFirst) {
+  const key = meta.genFirst.split("|").map(function (s) { return s.trim(); });
+  const hits = nodes.filter(function (n) {
+    return n.name === key[0] && (key.length < 2 || !key[1] || n.ti === key[1]);
+  });
+  if (!hits.length) console.warn("[lineage] @gen-first 主名无人匹配，已按无锚视（根为第壹代）：", meta.genFirst);
+  else if (hits.length > 1 && key.length < 2) console.warn("[lineage] @gen-first 裸名重名歧义（须带|称号甄别），已按无锚视：", meta.genFirst);
+  else GEN_ANCHOR = hits[0].depth;
+}
 
 /* 君位传承名单（@throne / @throneN，一行一名单、可多行，按书写序；
    键号＝检索排序级——裸＝1级（帝王）、2＝藩王、3＝郡王、越号照认，
@@ -1087,7 +1107,8 @@ for (const n of shown) {
 }
 
 /* 3. 行高与行顶（行间留走线道）；无显示节点的辈分不占行（行带/代标亦跳过），
-   代标仍按真实辈序编号（第N代），跳辈处留空不补号 */
+   代标按真实辈序编号（第N代，@gen-first 锚在位则自锚辈起壹号、其上诸辈
+   不占代数），跳辈处留空不补号 */
 const levelH = [];
 for (const n of shown) {
   levelH[n.depth] = Math.max(levelH[n.depth] || 0, n.nameH, n.posH, n.tiH, n.moH, n.rkH, n.jiH, n.zaiH);
@@ -1101,12 +1122,15 @@ const boardH = acc - GAP_Y + padB;
 
 const boardW = ORIGIN + dRoot.w + padM + COL_W + padR + FR_R;  /* 树区 + 题名条 */
 
-/* 3b. 代标：版框内最左代标带，逐辈竖排「第壹代…」，与该辈行带垂直居中 */
+/* 3b. 代标：版框内最左代标带，逐辈竖排「第壹代…」，与该辈行带垂直居中；
+   锚上诸辈（@gen-first）整带留空白——不建 .gen 元素（用户定谳） */
 for (const d of depths) {
+  const genNo = d + 1 - GEN_ANCHOR;
+  if (genNo < 1) continue;
   const g = document.createElement("div");
   g.className = "gen";
   g.setAttribute("aria-hidden", "true");
-  setWrapped(g, "第" + hanNum(d + 1) + "代", true);
+  setWrapped(g, "第" + hanNum(genNo) + "代", true);
   g.style.left = (FR_L + 8) + "px";
   g.style.width = (GEN_W - 12) + "px";
   g.style.top = (levelTop[d] + levelH[d] / 2) + "px";
@@ -1616,27 +1640,27 @@ board.style.height = boardH + "px";
      对照全集，数据添字后重跑即补，表字随 subset-fonts.mjs 自动入子集）；
      表只求自洽（同字同折、两侧一致），不求语言学精确，幹/乾多归一无碍
      匹配。折叠字段 _f* 建索引时一次算成。 */
-/* T2S 表：tools/gen-t2s.mjs 据内收 OpenCC 字表生成（370 对＝数据块用字繁简对照全集∪旧表），勿手改；数据添字后重跑该工具，再 subset-fonts.mjs（表字自动入子集）。 */
+/* T2S 表：tools/gen-t2s.mjs 据内收 OpenCC 字表生成（376 对＝数据块用字繁简对照全集∪旧表），勿手改；数据添字后重跑该工具，再 subset-fonts.mjs（表字自动入子集）。 */
 const T2S_SRC =
-  "乾佔侖倉個倫側傑傳僑儀兩別剛劉勝勳勵厲吳呂啟喚單嚴國圖堅堯塊塏塵壽嬪嬰孫寧寫寶將尋對" +
-  "層峯崗嶽師帶幹庫廢廣廬張彌後復恆愛愨愷慶憖憫憲懷懸掄揚換擊據數於時晉晝暉曆書會東棄棖" +
-  "棗棟棡楊楨極榘榦榮構槤槮樂樅標樞樸樺樿檟檢檳櫸欄權欒欽歸殤沖涇淨渾湯溈準溫滄漢漬漵潁" +
-  "潔潙潚潛潤澐澤澱濟濤瀾灃為烏烴無煉煒煙煥熲熾燁燦爲爾獨獲獻瑪璉璸瓊甌畫當發監盧碩碽祐" +
-  "祕祿禎禕禪禮稜稱筆節範簡紀納純紱紹絡統綏綬綱綴綿緒線緡緯縮繆繼續羅聖聰肅臘臨與興荊莊" +
-  "華萬葉蒞蔣蕩蕭薊蘄蘇蘭虛號蝨蟣衛袞裏襲見視親覺觀計訢許詭認誠談諸謙謝謹讓豎豐貝貞負貳" +
-  "貴費賈賓賕賢質賴賽趙車軍載輔輝輩輿連進過達遜遼鄉鄒鄖鄧鄭釋釘鈕鈞鈦鈴鈺鉅鉗鉞鉦銑銓銘" +
-  "銪銳鋏鋙鋥鋮錙錢錫鍈鍔鍵鍺鍼鍾鎔鎡鎧鎬鎮鏐鏞鏡鏵鐘鐯鐸鑄鑌鑑鑿長開閔閻關闢陞陰陳陸陽" +
-  "隱雙靈靜韋韓韜頃順須頎頤題額顏顒類顯餘館饒馬馮驕驩驪魯鹹麗黃點黶齊齒";
+  "乾佔來侖倉個倫側傑傳僑儀兒兩別剛劉勝勳勵厲吳呂啟喚單嚴國圖堅堯塊塏塵壽嬪嬰孫寧寫寶將" +
+  "尋對層峯崗嶽師帶幹庫廢廣廬張彌後復恆愛愨愷慶憖憫憲應懷懸掄揚換擊據數於時晉晝暉曆書會" +
+  "東棄棖棗棟棡楊楨極榘榦榮構槤槮樂樅標樞樸樺樿檟檢檳櫸欄權欒欽歸殤沖涇淨渾湯溈準溫滄漢" +
+  "漬漵潁潔潙潚潛潤澐澤澱濟濤瀾灃為烏烴無煉煒煙煥熲熾燁燦爲爾獨獲獻瑪璉璸瓊甌畫當發監盧" +
+  "碩碽祐祕祿禎禕禪禮稜稱筆節範簡紀納純紱紹絡統綏綬綱綴綿緒線緡緯縮繆繼續羅聖聰肅臘臨與" +
+  "興荊莊華萬葉蒞蔣蕩蕭薊蘄蘇蘭虛號蝨蟣衛袞裏襲見視親覺觀計記訢許詭認誠談諸謙謝謹讓豎豐" +
+  "貝貞負貳貴費賈賓賕賢質賴賽趙車軍載輔輝輩輿轉連進過達遜遼鄉鄒鄖鄧鄭釋釘鈕鈞鈦鈴鈺鉅鉗" +
+  "鉞鉦銑銓銘銪銳鋏鋙鋥鋮錙錢錫鍈鍔鍵鍺鍼鍾鎔鎡鎧鎬鎮鏐鏞鏡鏵鐘鐯鐵鐸鑄鑌鑑鑿長開閔閻關" +
+  "闢陞陰陳陸陽隱雙靈靜韋韓韜頃順須頎頤題額顏顒類顯餘館饒馬馮驕驩驪魯鹹麗黃點黶齊齒";
 const T2S_DST =
-  "干占伦仓个伦侧杰传侨仪两别刚刘胜勋励厉吴吕启唤单严国图坚尧块垲尘寿嫔婴孙宁写宝将寻对" +
-  "层峰岗岳师带干库废广庐张弥后复恒爱悫恺庆慭悯宪怀悬抡扬换击据数于时晋昼晖历书会东弃枨" +
-  "枣栋㭎杨桢极矩干荣构梿椮乐枞标枢朴桦椫槚检槟榉栏权栾钦归殇冲泾净浑汤沩准温沧汉渍溆颍" +
-  "洁沩㴋潜润沄泽淀济涛澜沣为乌烃无炼炜烟焕颎炽烨灿为尔独获献玛琏瑸琼瓯画当发监卢硕䂵佑" +
-  "秘禄祯祎禅礼棱称笔节范简纪纳纯绂绍络统绥绶纲缀绵绪线缗纬缩缪继续罗圣聪肃腊临与兴荆庄" +
-  "华万叶莅蒋荡萧蓟蕲苏兰虚号虱虮卫衮里袭见视亲觉观计欣许诡认诚谈诸谦谢谨让竖丰贝贞负贰" +
-  "贵费贾宾赇贤质赖赛赵车军载辅辉辈舆连进过达逊辽乡邹郧邓郑释钉钮钧钛铃钰巨钳钺钲铣铨铭" +
-  "铕锐铗铻锃铖锱钱锡锳锷键锗针钟镕镃铠镐镇镠镛镜铧钟䦃铎铸镔鉴凿长开闵阎关辟升阴陈陆阳" +
-  "隐双灵静韦韩韬顷顺须颀颐题额颜颙类显余馆饶马冯骄欢丽鲁咸丽黄点黡齐齿";
+  "干占来伦仓个伦侧杰传侨仪儿两别刚刘胜勋励厉吴吕启唤单严国图坚尧块垲尘寿嫔婴孙宁写宝将" +
+  "寻对层峰岗岳师带干库废广庐张弥后复恒爱悫恺庆慭悯宪应怀悬抡扬换击据数于时晋昼晖历书会" +
+  "东弃枨枣栋㭎杨桢极矩干荣构梿椮乐枞标枢朴桦椫槚检槟榉栏权栾钦归殇冲泾净浑汤沩准温沧汉" +
+  "渍溆颍洁沩㴋潜润沄泽淀济涛澜沣为乌烃无炼炜烟焕颎炽烨灿为尔独获献玛琏瑸琼瓯画当发监卢" +
+  "硕䂵佑秘禄祯祎禅礼棱称笔节范简纪纳纯绂绍络统绥绶纲缀绵绪线缗纬缩缪继续罗圣聪肃腊临与" +
+  "兴荆庄华万叶莅蒋荡萧蓟蕲苏兰虚号虱虮卫衮里袭见视亲觉观计记欣许诡认诚谈诸谦谢谨让竖丰" +
+  "贝贞负贰贵费贾宾赇贤质赖赛赵车军载辅辉辈舆转连进过达逊辽乡邹郧邓郑释钉钮钧钛铃钰巨钳" +
+  "钺钲铣铨铭铕锐铗铻锃铖锱钱锡锳锷键锗针钟镕镃铠镐镇镠镛镜铧钟䦃铁铎铸镔鉴凿长开闵阎关" +
+  "辟升阴陈陆阳隐双灵静韦韩韬顷顺须颀颐题额颜颙类显余馆饶马冯骄欢丽鲁咸丽黄点黡齐齿";
 const T2S = {};
 for (let i = 0; i < T2S_SRC.length; i++) T2S[T2S_SRC[i]] = T2S_DST[i];
 const fold = function (s) {
@@ -1786,7 +1810,7 @@ const renderList = function (keepSel) {
     row.appendChild(sn);
     const note = [];
     if (n.ti) note.push(n.ti + (n.nh ? " " + n.nh : ""));
-    note.push("第" + hanNum(n.depth + 1) + "代");
+    if (n.depth + 1 - GEN_ANCHOR >= 1) note.push("第" + hanNum(n.depth + 1 - GEN_ANCHOR) + "代");   /* 锚上诸辈不占代数，小笺略去（同代标） */
     const noteEl = document.createElement("span");
     emitInkText(noteEl, "　" + note.join("　"), false);
     row.appendChild(noteEl);
