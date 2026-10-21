@@ -37,6 +37,15 @@
  *     排行栏得缀無嗣：行内独立段「無嗣」（简繁均认；位置无关、一行至多
  *     一个，解析先摘同上），显示为排行（有序齒则序齒）后空一字接排
  *     「無嗣」（显示统一繁体；同墨黑、同随栏加粗）；無嗣而有后则告警
+ *   名字/称号诸栏得书 IDS 组字描述序列（Unicode 表意文字描述符）代无字形
+ *   之组字：如「朱慈⿱艹𪸔」，⿱艹𪸔 合为一字（艹上𪸔下）。十二符全收
+ *   （⿰⿱⿲⿳⿴⿵⿶⿷⿸⿹⿺⿻＝左右/上下/三合/全围/半包/叠压），得嵌套；
+ *   引擎运行时合成 SVG 字形显示（常字部件走站内字体链活字、两库俱缺部件
+ *   复用 rare-ink 墨图），描述序列真文本透明留 DOM——可搜可复制。寻人/深链
+ *   与 @throne/@alias/@gen-first 匹配均「原串＋削符」并检（削 IDS 符比对：
+ *   粘全串、搜部件皆中；跳部件之别名如「朱慈𪸔」须自书 @alias 条）。
+ *   输入框回显原串（描述符霞鹜子集承显实形，同罕字回显已知边界）；
+ *   坏序列（描述符后组件不足）告警后按普通字降级
  *   # 开头为说明行；@key=value 为页面设置：
  *     @title    卷端大题（如：大明帝系）
  *     @subtitle 卷端副题（可空）
@@ -207,7 +216,7 @@ let notdefSig = null;
    自此不带约四百 KB base64）——数据块含罕字才注入，载毕补墨，详见下方
    「罕字墨图懒加载」节。 */
 /*==subset-tool:main-missing:start==*/
-const MAIN_MISSING = new Set("≥〃〄々〆〒〓〘〙〚〛〜〝〞〟〠〡〢〣〤〥〦〧〨〩〪〭〮〯〫〬〰〱〲〳〴〵〶〷〸〹〺〻〼〽〾〿㘧㙂㙊㙺㡑㬙㭎㭕㭦㭶㭿㮧㮵㯆㰒㰘㳛㳻㴋㴫㵑㷑㷫㸅㸋䂵䄉䄔䓎䤩䦃䵺佰侎倛僰僵勲喿圳坅坋坖坮坺坾垍垐垝垬垶垸垹埈埌埛埢埨堁堈堉堢堼堾塎塐塙塨塽墒墡墣墭墱墲墽墿壄壐壡妞巃悊愨慭憖昐晀晥暚曕曣朐朾杙杬枍枔枞枟枬柌栃栐栭栶桪桱梈梮梸梿棅棆棌棡棪棿椫椮楎楑楒楙楧楩楪楬榉榐榑榘榰槆槚槢槤槮樅樉樘樬樳樿橏橒橓橔橚橞檍檟檡檭檽櫍櫑櫭櫸欘汌沄沋沘沶沺泘泩泴泿洐洤浤涪淓淔淕淰淲淴渲渻渼湁湉湢湳湸溆溙滏滽漎漵潚潾澋澐濍瀷灂灮炆炔炖炟炢炣烃烇烨烱烴烶烷烺焀焆焌焟焯焴煃熍熜熞熠熥熧熲熻熽熿燀燁燌燝燨燽爀爃爔爖爥獳玟珔珹琭琼瑆瑍瑢瑸璂璔璘璸碽祄祎祹禌禐禑禕禛禟禵禶蕹虮蟣訢詝詥誴譓譞釴鈜鈝鈠鈦鈱鉁鉷鉹鉾銑銪鋐鋑鋙鋡鋥鋮鋹鋿錝錥錧鍈鍉鍗鍺鎀鎙鎡鎦鏋鏐鏓鏳鏴鏵鏸鏼鐄鐖鐭鐯鑅钛铕铖铣铧铻锃锗锳镃镏镕镠颎颙馞鯈鱓黡黶＂＃＄％＆＇＊＋－０１２３４５６７８９＜＝＞＠ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ＾＿｀ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ｛｝～𡍨𡎻𡑆𡒊𢣴𣒻𣜬𣴅𣵧𣹟𣿖𤀰𤂾𤆝𤇅𤇥𤇻𤈑𤉹𤊟𤋜𤐨𤬪𧽧𨥌𨧆𨧨𨨣𨨰𨩱𨰜𨰝𩒪𪸔𬃉𭏬𰉠𰉬𰊊𰋁𰍠𰘱𰛭𰜴𰝙𰝠𰞬𰟙𰼧𰼪𰽅");
+const MAIN_MISSING = new Set("≥⿱〃〄々〆〒〓〘〙〚〛〜〝〞〟〠〡〢〣〤〥〦〧〨〩〪〭〮〯〫〬〰〱〲〳〴〵〶〷〸〹〺〻〼〽〾〿㘧㙂㙊㙺㡑㬙㭎㭕㭦㭶㭿㮧㮵㯆㰒㰘㳛㳻㴋㴫㵑㷑㷫㸅㸋䂵䄉䄔䓎䤩䦃䵺佰侎倛僰僵勲喿圳坅坋坖坮坺坾垍垐垝垬垶垸垹埈埌埛埢埨堁堈堉堢堼堾塎塐塙塨塽墒墡墣墭墱墲墽墿壄壐壡妞巃悊愨慭憖昐晀晥暚曕曣朐朾杙杬枍枔枞枟枬柌栃栐栭栶桪桱梈梮梸梿棅棆棌棡棪棿椫椮楎楑楒楙楧楩楪楬榉榐榑榘榰槆槚槢槤槮樅樉樘樬樳樿橏橒橓橔橚橞檍檟檡檭檽櫍櫑櫭櫸欘汌沄沋沘沶沺泘泩泴泿洐洤浤涪淓淔淕淰淲淴渲渻渼湁湉湢湳湸溆溙滏滽漎漵潚潾澋澐濍瀷灂灮炆炔炖炟炢炣烃烇烨烱烴烶烷烺焀焆焌焟焯焴煃熍熜熞熠熥熧熲熻熽熿燀燁燌燝燨燽爀爃爔爖爥獳玟珔珹琭琼瑆瑍瑢瑸璂璔璘璸碽祄祎祹禌禐禑禕禛禟禵禶艹蕹虮蟣訢詝詥誴譓譞釴鈜鈝鈠鈦鈱鉁鉷鉹鉾銑銪鋐鋑鋙鋡鋥鋮鋹鋿錝錥錧鍈鍉鍗鍺鎀鎙鎡鎦鏋鏐鏓鏳鏴鏵鏸鏼鐄鐖鐭鐯鑅钛铕铖铣铧铻锃锗锳镃镏镕镠颎颙馞鯈鱓黡黶＂＃＄％＆＇＊＋－０１２３４５６７８９＜＝＞＠ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ＾＿｀ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ｛｝～𡍨𡎻𡑆𡒊𢣴𣒻𣜬𣴅𣵧𣹟𣿖𤀰𤂾𤆝𤇅𤇥𤇻𤈑𤉹𤊟𤋜𤐨𤬪𧽧𨥌𨧆𨧨𨨣𨨰𨩱𨰜𨰝𩒪𪸔𬃉𭏬𰉠𰉬𰊊𰋁𰍠𰘱𰛭𰜴𰝙𰝠𰞬𰟙𰼧𰼪𰽅");
 /*==subset-tool:main-missing:end==*/
 /*==subset-tool:rare-chars:start==*/
 const RARE_CHARS = new Set("〚〛〪〭〮〯〫〬〱〲𡍨𡎻𡑆𡒊𢣴𣒻𣜬𣴅𣵧𣹟𣿖𤀰𤂾𤆝𤇅𤇥𤇻𤈑𤉹𤊟𤋜𤐨𤬪𧽧𨥌𨧆𨧨𨨣𨨰𨩱𨰜𨰝𩒪𪸔𬃉𭏬𰉠𰉬𰊊𰋁𰍠𰘱𰛭𰜴𰝙𰝠𰞬𰟙𰼧𰼪𰽅");
@@ -231,6 +240,13 @@ const fillPendingInk = function () {
   let touchedCh = false;
   for (const sp of pendingInk) {
     if (!sp.isConnected) continue;               /* 小笺重建等已离场之盒：跳过 */
+    if (sp.dataset.idsSeq !== undefined) {       /* IDS 组字盒：重建内芯即补墨
+                                                    （1em 定方几何不变，无需重校） */
+      const u = idsParse(sp.dataset.idsSeq)[0];
+      const sv = u && u.op && sp.querySelector("svg");
+      if (sv) sv.innerHTML = idsMarkup(u, sp.dataset.inkB === "1");
+      continue;
+    }
     const url = rareUrl(sp.dataset.inkCh, sp.dataset.inkB === "1");
     if (!url) continue;
     sp.style.backgroundImage = "url(" + url + ")";
@@ -310,7 +326,148 @@ const rareUrl = function (ch, bold) {
 const rarePend = function (ch) { return !rareLoaded && !rareFailed && RARE_CHARS.has(ch); };
 const inkWarned = new Set();
 
-/* 将文本按字拆分：两库俱缺之罕字发 span.ink 烘墨图（真文本仍在 DOM——
+/* ---------- IDS 组字合成字形（2026-10-21 用户定谳三事：运行时合成、
+   十二符全收、检索原串＋削符并检） ----------
+   数据得书「⿱艹𪸔」类描述序列代无字形之组字：引擎解析为树，运行时合成
+   SVG 显示——常字部件发 <text> 走站内字体链（自 body 继承 --han-font-serif，
+   子集分区/系统 ExtB/G 链尾照常生效），两库俱缺部件复用 rare-ink 墨图发
+   <image>（粗栏 b 变体同 rareUrl 旧规），嵌套 IDS 以嵌套 <svg> 递归。
+   真文本（含描述符）透明留 DOM（.ids-t，.ink 同旨）：页内查找/复制/
+   子集采集/无障碍可见。墨图分册在途时罕部件先以 <text> 系统链暂代
+   （.fbc 暂挂同旨），载毕 fillPendingInk 重建内芯补墨。
+   几何：viewBox 0 0 100 100，部件落格 IDS_RECTS 表驱动（0..100 份），
+   非等比 scale 充盈其格（字体排印之部件压缩同旨）；IDS_K＝全局充盈系数。
+   调参须探针定谳（数值墨迹 bbox），勿凭截图眯读 */
+const IDS_ARITY = { "⿰": 2, "⿱": 2, "⿲": 3, "⿳": 3, "⿴": 2, "⿵": 2,
+                    "⿶": 2, "⿷": 2, "⿸": 2, "⿹": 2, "⿺": 2, "⿻": 2 };
+const IDS_ANY = /[⿰-⿻]/;      /* 快径判据：无描述符之串免建树 */
+const IDS_ALL = /[⿰-⿻]/g;     /* 削符规范化用 */
+/* 部件落格矩形 [x,y,w,h]（0..100 份）：包围/半包诸符外框部件铺满全格、
+   内件偏置缩格，偏置系通行 IDS 渲染近似值——目验微调只动此表 */
+const IDS_RECTS = {
+  "⿰": [[0, 0, 50, 100], [50, 0, 50, 100]],
+  "⿱": [[0, 0, 100, 50], [0, 50, 100, 50]],
+  "⿲": [[0, 0, 100 / 3, 100], [100 / 3, 0, 100 / 3, 100], [200 / 3, 0, 100 / 3, 100]],
+  "⿳": [[0, 0, 100, 100 / 3], [0, 100 / 3, 100, 100 / 3], [0, 200 / 3, 100, 100 / 3]],
+  "⿴": [[0, 0, 100, 100], [10, 10, 80, 80]],
+  "⿵": [[0, 0, 100, 100], [10, 8, 80, 74]],
+  "⿶": [[0, 0, 100, 100], [10, 20, 80, 70]],
+  "⿷": [[0, 0, 100, 100], [20, 10, 70, 80]],
+  "⿸": [[0, 0, 100, 100], [20, 20, 70, 70]],
+  "⿹": [[0, 0, 100, 100], [10, 20, 70, 70]],
+  "⿺": [[0, 0, 100, 100], [18, 6, 72, 66]],
+  "⿻": [[0, 0, 100, 100], [0, 0, 100, 100]]
+};
+const IDS_K = 1.06;   /* 部件充盈系数：CJK 墨迹约占 em 八成半，微放大贴格（探针校准） */
+
+/* 解析文本为单元列：{ch,seq}＝普通字（旧路径原样）、{op,kids,seq}＝IDS 组字。
+   坏序列（描述符后组件不足）告警后按普通字降级（走 .fbc 回落，可见不隐身） */
+const idsWarnedBad = new Set();
+function idsParse(text) {
+  if (!text) return [];
+  if (!IDS_ANY.test(text))
+    return Array.from(text, function (c) { return { ch: c, seq: c }; });
+  const cs = Array.from(text);
+  const units = [];
+  let i = 0;
+  const take = function () {
+    if (i >= cs.length) return null;
+    const ar = IDS_ARITY[cs[i]];
+    if (ar === undefined) { const c = cs[i]; i++; return { ch: c, seq: c }; }
+    const start = i; i++;
+    const kids = [];
+    for (let k = 0; k < ar; k++) {
+      const sub = take();
+      if (!sub) { i = start; return null; }   /* 组件不足：回退，按普通字降级 */
+      kids.push(sub);
+    }
+    return { op: cs[start], kids: kids, seq: cs.slice(start, i).join("") };
+  };
+  while (i < cs.length) {
+    const u = take();
+    if (u) { units.push(u); continue; }
+    if (!idsWarnedBad.has(text)) {
+      idsWarnedBad.add(text);
+      console.warn("[lineage] IDS 坏序列（描述符后组件不足），已按普通字降级：", text);
+    }
+    units.push({ ch: cs[i], seq: cs[i] }); i++;
+  }
+  return units;
+}
+/* 削 IDS 描述符：检索（寻人/深链）与 @设置名单匹配之「削符并检」规范化，
+   原串比对并行不废（跳部件之别名不在口径内，须自书 @alias） */
+const idsStrip = function (s) { return s ? s.replace(IDS_ALL, "") : s; };
+
+const xmlEsc = function (s) {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+};
+/* 合成 SVG 内芯（递归）：罕字部件有墨发 <image>（preserveAspectRatio=none
+   拉伸铺格——字体部件压缩同旨，128px 源半格缩用仍锐）、无墨（分册在途或
+   tofu 拒收）发 <text> 走字体链；常字部件一律 <text>（g 非等比 scale 充盈
+   矩形；font-size:100 用户单位，central 基线＋middle 锚取中；fill 承
+   currentColor 随栏色，朱书栏自然朱）；嵌套 IDS 发嵌套 <svg>（默认 meet
+   保方形内芯不变形） */
+function idsMarkup(u, bold) {
+  const rects = IDS_RECTS[u.op];
+  let out = "";
+  u.kids.forEach(function (kid, ix) {
+    const r = rects[ix];
+    const x = +r[0].toFixed(2), y = +r[1].toFixed(2);
+    const w = +r[2].toFixed(2), h = +r[3].toFixed(2);
+    if (kid.op) {
+      out += '<svg x="' + x + '" y="' + y + '" width="' + w + '" height="' + h +
+             '" viewBox="0 0 100 100">' + idsMarkup(kid, bold) + "</svg>";
+      return;
+    }
+    const ink = rareUrl(kid.ch, bold);
+    if (ink) {
+      out += '<image href="' + ink + '" x="' + x + '" y="' + y + '" width="' + w +
+             '" height="' + h + '" preserveAspectRatio="none"/>';
+      return;
+    }
+    const sx = (w / 100 * IDS_K).toFixed(4), sy = (h / 100 * IDS_K).toFixed(4);
+    out += '<g transform="translate(' + (x + w / 2).toFixed(2) + "," + (y + h / 2).toFixed(2) +
+           ") scale(" + sx + "," + sy + ')"><text x="0" y="0" font-size="100" ' +
+           'text-anchor="middle" dominant-baseline="central" fill="currentColor">' +
+           xmlEsc(kid.ch) + "</text></g>";
+  });
+  return out;
+}
+/* IDS 组字盒：1em 定方（.ink 同几何，calibrateFallback 同列校准）＋透明
+   真文本＋合成 SVG。罕字部件而墨图分册在途：记名待补（fillPendingInk
+   重建内芯）；朱书栏现罕字部件：同旧规告警（墨图烘色 ink-800） */
+function makeIdsSpan(u, perChar, bold, el) {
+  const s = document.createElement("span");
+  s.className = perChar ? "ch ids" : "ids";
+  const t = document.createElement("span");
+  t.className = "ids-t";
+  t.textContent = u.seq;
+  s.appendChild(t);
+  const sv = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  sv.setAttribute("viewBox", "0 0 100 100");
+  sv.setAttribute("aria-hidden", "true");
+  sv.innerHTML = idsMarkup(u, bold);
+  s.appendChild(sv);
+  let pend = false;
+  (function walk(kid) {
+    if (kid.op) { kid.kids.forEach(walk); return; }
+    if (!RARE_CHARS.has(kid.ch)) return;
+    if (rarePend(kid.ch)) pend = true;
+    if (el && el.matches && el.matches(".ti, .mo, .yr") && !inkWarned.has(kid.ch)) {
+      inkWarned.add(kid.ch);
+      console.warn("[lineage] 罕字「" + kid.ch + "」作 IDS 部件现于朱书栏：墨图烘色为 ink-800，需重烘朱色变体");
+    }
+  })(u);
+  if (pend) {
+    s.dataset.idsSeq = u.seq;
+    if (bold) s.dataset.inkB = "1";
+    pendingInk.push(s);
+  }
+  return s;
+}
+
+/* 将文本按字拆分（IDS 描述序列先合为组字单元）：两库俱缺之罕字发 span.ink 烘墨图（真文本仍在 DOM——
    无障碍/页内查找/子集采集可见，color:transparent 隐去，图挂 background）；
    主字库缺字包 span.fbc 单独回落；
    perChar 时（竖排各栏）每字独立字盒 span.ch，隔离混排度量；
@@ -322,7 +479,13 @@ function setWrapped(el, text, perChar, badSet) {
     if (run) { el.appendChild(document.createTextNode(run)); run = ""; }
   };
   const impCtx = !!badSet;   /* 加粗栏上下文＝badSet 在场（唯君主行传入） */
-  for (const ch of text) {
+  for (const u of idsParse(text)) {
+    if (u.op) {   /* IDS 组字：合成字形单元（自成一盒，不入市文 run） */
+      flush();
+      el.appendChild(makeIdsSpan(u, perChar, impCtx, el));
+      continue;
+    }
+    const ch = u.ch;
     const ink = ch && rareUrl(ch, impCtx);
     if (ink) {
       flush();
@@ -359,7 +522,8 @@ function setWrapped(el, text, perChar, badSet) {
   flush();
 }
 
-/* 横排语境逐字发射（寻人候选小笺用）：罕字换 span.ink 烘墨图、主字库
+/* 横排语境逐字发射（寻人候选小笺用）：IDS 组字发 span.ids 合成盒、
+   罕字换 span.ink 烘墨图、主字库
    缺字换 span.fbc 径落霞鹜（子集分区后缺字已不在文悦 cmap，裸文本链亦
    自落——包裹仍不可省：横排几何中和、粗栏 400＋.04em 描边仿粗，皆唯
    包裹可控），余常字发文本 run 原样。小笺横排语境之 .fbc 几何由
@@ -373,7 +537,13 @@ const emitInkText = function (el, text, bold) {
   const flush = function () {
     if (run) { el.appendChild(document.createTextNode(run)); run = ""; }
   };
-  for (const ch of text) {
+  for (const u of idsParse(text)) {
+    if (u.op) {   /* IDS 组字：横排小笺同发合成盒（#seek-list .ids 承光学落点定值） */
+      flush();
+      el.appendChild(makeIdsSpan(u, false, bold, el));
+      continue;
+    }
+    const ch = u.ch;
     const ink = rareUrl(ch, bold);
     if (ink) {
       flush();
@@ -408,12 +578,13 @@ const emitInkText = function (el, text, bold) {
    朱点（原一次性公式重跑会清零，故 cur+Δ）。
    幂等：已带 inline left 者跳过。offset 系自洽，zoom 无关。 */
 function calibrateFallback() {
-  for (const box of document.querySelectorAll(".ch.fbc, .ch.ink")) {
+  for (const box of document.querySelectorAll(".ch.fbc, .ch.ink, .ch.ids")) {
     if (box.style.left) continue;
     const p = box.parentElement;
     const refs = Array.prototype.filter.call(p.children, function (c) {
       return c.classList && c.classList.contains("ch") && !c.classList.contains("fbc") &&
-             !c.classList.contains("ink") && c.textContent.trim();   /* 空格 gap 盒不作参照 */
+             !c.classList.contains("ink") && !c.classList.contains("ids") &&
+             c.textContent.trim();   /* 空格 gap 盒不作参照 */
     });
     if (!refs.length) continue;   /* 全回落栏无参照：vertical-align:middle 落点即终 */
     const ref = refs[0];
@@ -576,8 +747,9 @@ function parseData(text) {
       const names = gt.slice(1).join(">").split(/[,,]/).map(function (s) { return s.trim(); }).filter(Boolean);
       const key = gt[0].split("|").map(function (s) { return s.trim(); });
       if (!key[0] || !names.length) { console.warn("[lineage] @alias 主名或别名为空，已跳过：", entry); return; }
-      const hits = all.filter(function (n) {
-        return n.name === key[0] && (key.length < 2 || !key[1] || n.ti === key[1]);
+      const hits = all.filter(function (n) {   /* IDS 削符并认（原串同形自然亦中） */
+        return idsStrip(n.name) === idsStrip(key[0]) &&
+               (key.length < 2 || !key[1] || idsStrip(n.ti) === idsStrip(key[1]));
       });
       if (!hits.length) { console.warn("[lineage] @alias 主名无人匹配，已跳过：", entry); return; }
       if (hits.length > 1 && key.length < 2) { console.warn("[lineage] @alias 裸名重名歧义（须带|称号甄别），已跳过：", entry); return; }
@@ -706,8 +878,9 @@ collect(root, 0, nodes);
 let GEN_ANCHOR = 0;
 if (meta.genFirst) {
   const key = meta.genFirst.split("|").map(function (s) { return s.trim(); });
-  const hits = nodes.filter(function (n) {
-    return n.name === key[0] && (key.length < 2 || !key[1] || n.ti === key[1]);
+  const hits = nodes.filter(function (n) {   /* IDS 削符并认（@alias 同规） */
+    return idsStrip(n.name) === idsStrip(key[0]) &&
+           (key.length < 2 || !key[1] || idsStrip(n.ti) === idsStrip(key[1]));
   });
   if (!hits.length) console.warn("[lineage] @gen-first 主名无人匹配，已按无锚视（根为第壹代）：", meta.genFirst);
   else if (hits.length > 1 && key.length < 2) console.warn("[lineage] @gen-first 裸名重名歧义（须带|称号甄别），已按无锚视：", meta.genFirst);
@@ -771,25 +944,29 @@ const PRINCE = RANK_WORD === "皇帝" ? "皇" : "";
 const PRINCE_PREFIX = meta["prince-prefix"] || "";
 /* 名字/名字+称号 → 节点索引：名单条目解析为节点引用，
    此后加粗、位次、排行冠字、浮层一律以节点为键，重名歧义根除 */
+/* 键一律 IDS 削符（2026-10-21 定谳「原串＋削符并检」之 @设置侧镜像）：
+   名单条目书 IDS 原形或削符形皆中，人物行书与不书 IDS 亦互中 */
 const byKey = new Map();       /* 「名\0称号首节」→ [节点] */
 const byKeyFull = new Map();   /* 「名\0称号栏全串」→ [节点]（多称号条目全串匹配用；年号段不入匹配） */
 const byNameAll = new Map();   /* 「名」→ [节点]（裸名旧式条目用） */
 for (const n of nodes) {
-  const ti1 = n.ti ? n.ti.split(" ")[0] : "";   /* n.ti 已归一单空格分隔 */
-  for (const pair of [[byKey, n.name + "\u0000" + ti1], [byNameAll, n.name]]) {
+  const nm = idsStrip(n.name);
+  const ti1 = n.ti ? idsStrip(n.ti.split(" ")[0]) : "";   /* n.ti 已归一单空格分隔 */
+  for (const pair of [[byKey, nm + "\u0000" + ti1], [byNameAll, nm]]) {
     if (!pair[0].has(pair[1])) pair[0].set(pair[1], []);
     pair[0].get(pair[1]).push(n);
   }
   if (n.ti.includes(" ")) {   /* 多称号行：全串另索引 */
-    const k = n.name + "\u0000" + n.ti;
+    const k = nm + "\u0000" + idsStrip(n.ti);
     if (!byKeyFull.has(k)) byKeyFull.set(k, []);
     byKeyFull.get(k).push(n);
   }
 }
 function resolveEntry(g, e) {
-  const cands = e.ti === null ? byNameAll.get(e.name) || []
-    : byKey.get(e.name + "\u0000" + e.ti) ||
-      byKeyFull.get(e.name + "\u0000" + e.ti.replace(/\s+/g, " ").trim()) || [];
+  const enm = idsStrip(e.name);
+  const cands = e.ti === null ? byNameAll.get(enm) || []
+    : byKey.get(enm + "\u0000" + idsStrip(e.ti)) ||
+      byKeyFull.get(enm + "\u0000" + idsStrip(e.ti.replace(/\s+/g, " ").trim())) || [];
   if (cands.length === 1) return cands[0];
   console.warn("[lineage] @throne 条目" + (cands.length ? "歧义（命中 " + cands.length + " 人）" : "未匹配") +
                "，已跳过：", g.prefix + ":" + e.name + (e.ti === null ? "" : "|" + e.ti));
@@ -1671,23 +1848,31 @@ const fold = function (s) {
   for (const ch of s) out += T2S[ch] || ch;
   return out;
 };
+/* IDS 削符形（_f*2）与折叠原形并建（2026-10-21 定谳「原串＋削符并检」）：
+   粘全串/书原形中原串比对，搜部件/书削符形中削符比对 */
 for (const n of shown) {
-  n._fname = fold(n.name);
-  n._fti = fold(n.ti);
-  n._fnh = fold(n.nh);
-  n._fmo = fold(n.mo);
+  n._fname = fold(n.name);   n._fname2 = idsStrip(n._fname);
+  n._fti = fold(n.ti);       n._fti2 = idsStrip(n._fti);
+  n._fnh = fold(n.nh);       n._fnh2 = idsStrip(n._fnh);
+  n._fmo = fold(n.mo);       n._fmo2 = idsStrip(n._fmo);
   n._falias = (n.alias || []).map(fold);   /* @alias 别名：只入检索，名次并入名字级 */
+  n._falias2 = n._falias.map(idsStrip);
 }
 const seekMatch = function (q) {
   q = fold(q.trim());
   if (!q) return [];
+  const q2 = idsStrip(q);    /* 查询削符形（查询纯由描述符组成时为空，守而不比） */
+  const eq = function (raw, str) { return raw === q || (!!q2 && str === q2); };
+  const sub = function (raw, str) { return raw.includes(q) || (!!q2 && str.includes(q2)); };
   const scored = [];
   for (const n of shown) {
-    const sc = (n._fname === q || n._falias.includes(q)) ? 0
-             : (n._fname.includes(q) || n._falias.some(function (a) { return a.includes(q); })) ? 1
-             : n._fti && n._fti.includes(q) ? 2
-             : n._fnh && n._fnh.includes(q) ? 3
-             : n._fmo && n._fmo.includes(q) ? 4 : -1;
+    const sc = (eq(n._fname, n._fname2) ||
+                n._falias.some(function (a, i) { return eq(a, n._falias2[i]); })) ? 0
+             : (sub(n._fname, n._fname2) ||
+                n._falias.some(function (a, i) { return sub(a, n._falias2[i]); })) ? 1
+             : n._fti && sub(n._fti, n._fti2) ? 2
+             : n._fnh && sub(n._fnh, n._fnh2) ? 3
+             : n._fmo && sub(n._fmo, n._fmo2) ? 4 : -1;
     if (sc >= 0) scored.push({ n: n, sc: sc });
   }
   scored.sort(function (a, b) {   /* 名次＞级＞代数（2026-10-15 用户定谳）；再同保文档序（稳定排序） */
@@ -1921,7 +2106,11 @@ if (yearHash) {
   }
 } else if (hashRaw) {
   const hashFold = fold(hashRaw);
-  loadHit = seekMatch(hashRaw).filter(function (n) { return n._fname === hashFold || n._falias.includes(hashFold); })[0] || null;
+  const hashStrip = idsStrip(hashFold);   /* #人名 深链同「原串＋削符并检」口径 */
+  loadHit = seekMatch(hashRaw).filter(function (n) {
+    return n._fname === hashFold || (!!hashStrip && n._fname2 === hashStrip) ||
+           n._falias.includes(hashFold) || (!!hashStrip && n._falias2.includes(hashStrip));
+  })[0] || null;
 }
 if (loadHit) {
   locate(loadHit);

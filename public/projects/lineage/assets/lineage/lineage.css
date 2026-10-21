@@ -23,12 +23,12 @@ html { zoom: 0.5; }
    value 等未包裹语境赖此）；woff2 内容变更须同步进 src 之 ?v= 令牌破缓存 */
 @font-face {
   font-family: "文悦古体仿宋2";
-  src: url("../fonts/wenyue-guti-fangsong-2.woff2?v=20261020d") format("woff2");
+  src: url("../fonts/wenyue-guti-fangsong-2.woff2?v=20261021b") format("woff2");
   font-display: swap;
 }
 @font-face {
   font-family: "LXGW WenKai Fallback";
-  src: url("../fonts/LXGWWenKaiMono-Light.woff2?v=20261020d") format("woff2");
+  src: url("../fonts/LXGWWenKaiMono-Light.woff2?v=20261021b") format("woff2");
   font-display: swap;
 }
 
@@ -413,6 +413,41 @@ main { overflow-x: auto; overflow-y: hidden; }
    子集无 Bold 面，合成加粗或出空心，改 400＋描边仿粗；小字栏与题识
    （非 b）不经此规则，走 400 常态 */
 #seek-list b .fbc { font-weight: 400; -webkit-text-stroke: .04em currentColor; }
+
+/* IDS 组字合成字形（数据书「⿱艹𪸔」类描述序列，引擎运行时合成 SVG，
+   2026-10-21）：1em 定方盒同 .ink 几何（竖排 .ch 语境承诸盒规/字距，
+   calibrateFallback 同列校准）；真文本 .ids-t 透明绝对定位——不占宽、
+   页内查找/复制/子集采集可见（.ink 同旨）；部件落格表在 lineage.js
+   IDS_RECTS。部件活字 fill:currentColor 随栏色（朱书栏自然朱），字体链
+   自 body 继承 --han-font-serif 勿另立；罕部件挂 rare-ink PNG <image>
+   （粗栏 b 变体引擎侧选键）。加粗诸境（.imp/小笺 b/nosyn）部件文字一律
+   400＋描边仿粗：合成加粗于 Light 子集或出空心（.fbc 同病），SVG text
+   不分库统一走描边——font-size:100 用户单位下 stroke-width:5px 即 .05em
+   （.bb 既有校准常数；viewBox 0..100 之用户单位＝1% em） */
+.ids {
+  display: inline-block; width: 1em; height: 1em;
+  position: relative;
+  vertical-align: middle;     /* 竖排栏：块轴取中＋校准（.ink 同理） */
+}
+.ids > .ids-t {
+  position: absolute; left: 0; top: 0;
+  color: transparent; white-space: nowrap; pointer-events: none;
+}
+/* 合成 SVG user-select:none——内 <text> 部件字非真文本，选区/复制只取
+   .ids-t 之描述序列原串（不然复制得「朱慈⿱艹𪸔艹」部件冗尾） */
+.ids > svg {
+  position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+  -webkit-user-select: none; user-select: none;
+}
+/* 横排小笺：坐基线如替换字形（.ink 同值，行级像素审计定谳） */
+#seek-list .ids { vertical-align: -0.25em; }
+.node.imp .ids text, #seek-list b .ids text {
+  font-weight: 400;
+  stroke: currentColor; stroke-width: 5px; stroke-linejoin: round;
+  paint-order: stroke;
+}
+/* nosyn 引擎（iOS 类无合成加粗）：加粗诸境本已描边仿粗，上规直配即胜，
+   不另立规则；大题/代标内 IDS（非常态）承 400 无描边——已知且接受的边界 */
 
 /* ====== 水印（可选，两式二择一） ======
    甲式 @watermark=中心字：蒸馏团窠——单线外环＋云龙环（蒸馏线描：波状身·
