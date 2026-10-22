@@ -24,15 +24,15 @@
  *     即位栏串有年诸段（每段自足「前＋数＋年」、段间「与」接）结名单结词
  *     （@throne 内嵌括号对「前缀[首位,后续]:」定之，如 明朝[開國,即位]:、
  *     趙藩[受封,襲封]:；结词书繁照显；漏书兜底「開國/即位」并告警），
- *     在位栏合有年数诸段大写；两栏各按有无独立生成、缺栏递补贴位；
+ *     在位栏合有年数诸段平写；两栏各按有无独立生成、缺栏递补贴位；
  *     在位年得带单位缀（月/天，缺省即年，如 |1月、|60天）：年月并月
  *     （1年=12月）、天自为计——天不升格为月，大单位在场时天径弃；
  *     纯年显年、满一年显年（弃月弃天）、满一月显月（弃天）、纯天显天，
- *     数皆大写；
+ *     数皆平写；
  *     排行栏得附序齒：行内独立段「序齒N」（N 阿拉伯数字，简繁均认；
  *     位置无关——习惯收行尾，年段之后亦合法；一行至多一个），解析时
  *     先摘（不占字段位、不误触年段归类告警），显示为排行后空一字接排
- *     「序齒N子」（序數同齿序用字：1 長、2 次、叁起大写；同墨黑）；
+ *     「序齒N子」（序數同齿序用字：1 長、2 次、三起平数；同墨黑）；
  *     不写即无（殤夭未序齒者省）
  *     排行栏得缀無嗣：行内独立段「無嗣」（简繁均认；位置无关、一行至多
  *     一个，解析先摘同上），显示为排行（有序齒则序齒）后空一字接排
@@ -66,16 +66,18 @@
  *             位次前缀，括号对＝该名单首条/后续条即位栏结词（如
  *             明朝[開國,即位]:、趙藩[受封,襲封]:；书繁照显，漏书
  *             兜底 開國/即位并告警），
- *             位次按各名单独立编序（复辟重入列不占号）；
+ *             位次按各名单独立编序（复辟重入不占号）；一人挂多名单：同级
+ *             后书覆盖前书、跨级高级（键号小）压低级，败者仍占该名单号位
+ *             （2026-10-22 用户定谳——显示取覆盖胜者，号取名单实位）；
  *             前缀含「藩」（如 趙藩:、鄭藩新平:）＝藩王传承名单：成员不
  *             加粗、其子排行不冠皇字，位次＝「@prince-prefix 值＋第N位＋
- *             藩名王」（藩名＝藩后诸字、无则藩前：明朝第壹位趙王、
- *             明朝第壹位新平王），浮层照进（@focus-skip=藩前缀 可剔）；
+ *             藩名王」（藩名＝藩后诸字、无则藩前：明朝第一位趙王、
+ *             明朝第一位新平王），浮层照进（@focus-skip=藩前缀 可剔）；
  *             藩设计仅限明壳（2026-10-14 用户定谳，勿扩他朝）
  *     @rank-word  位次用字（缺省「皇帝」）；值非「皇帝」时排行不冠皇字，
- *             先秦壳可改 國君（位次即「晉國第壹位國君」）
+ *             先秦壳可改 國君（位次即「晉國第一位國君」）
  *     @prince-prefix  藩位次展示前缀（可省，省则用书写前缀「趙藩」）：
- *             明壳书 明朝 → 藩位次显「明朝第壹位趙王」
+ *             明壳书 明朝 → 藩位次显「明朝第一位趙王」
  *
  * 图渲染数据块全部人物；名单成员（君）诸栏加粗（君主至七栏）、位次带前缀编号；
  * 连线仅父子血缘墨线（梳式正交），帝位传承不画线。
@@ -90,9 +92,19 @@
  *             匹配规则同 @throne：裸名须全树唯一，重名赖称号甄别，
  *             歧义或无人匹配经告警跳过
  * @gen-first=主名[|称号]  代数编号锚（2026-10-20 用户定谳）：该人所在辈＝
- *             第壹代，其上诸辈不占代数（代标带整带留空白，候选小笺代数行
- *             同略）；无此行或匹配失败＝根为第壹代（旧态，清/晋壳不受扰）。
+ *             第一代，其上诸辈不占代数（代标带整带留空白，候选小笺代数行
+ *             同略）；无此行或匹配失败＝根为第一代（旧态，清/晋壳不受扰）。
  *             匹配规则同 @alias；多行书之后行覆盖前行
+ * @fief=藩名|首封人物名[|称号]|显示串  藩信息行（2026-10-22 用户定谳；藩
+ *             设计仅限明壳——数据驱动，无此行之路整条不建，清/晋/模板不扰）：
+ *             版框内树上之一行（卷首行）常驻单行、左端对齐——悬浮/钉住/
+ *             检索定位到该藩之人即显显示串，无藩信息则空行（行高恒占零跳动）。
+ *             藩属＝锚（首封藩王）支头＋其下全体男系后裔（含郡王子支与
+ *             名单外宗室），嵌套锚最近支头优先；显示串照显径用不解析语义、
+ *             内禁竖线，以藩名开头则藩名析出墨重首段；锚匹配同 @alias 规；
+ *             藩名重复前行生效。粘顶 JS 兜底（纵滚在 body、main 仅横滚，
+ *             sticky 纵轴被吞——引擎监听滚动切 fixed 钉顶、视观 1:1 寻人件
+ *             同法），横轴 sticky left 照常；详「藩信息行」节
  * ============================================================ */
 "use strict";
 
@@ -216,10 +228,10 @@ let notdefSig = null;
    自此不带约四百 KB base64）——数据块含罕字才注入，载毕补墨，详见下方
    「罕字墨图懒加载」节。 */
 /*==subset-tool:main-missing:start==*/
-const MAIN_MISSING = new Set("≥⿱〃〄々〆〒〓〘〙〚〛〜〝〞〟〠〡〢〣〤〥〦〧〨〩〪〭〮〯〫〬〰〱〲〳〴〵〶〷〸〹〺〻〼〽〾〿㘧㙂㙊㙺㡑㬙㭎㭕㭦㭶㭿㮧㮵㯆㰒㰘㳛㳻㴋㴫㵑㷑㷫㸅㸋䂵䄉䄔䓎䤩䦃䵺佰侎倛僰僵勲喿圳坅坋坖坮坺坾垍垐垝垬垶垸垹埈埌埛埢埨堁堈堉堢堼堾塎塐塙塨塽墒墡墣墭墱墲墽墿壄壐壡妞巃悊愨慭憖昐晀晥暚曕曣朐朾杙杬枍枔枞枟枬柌栃栐栭栶桪桱梈梮梸梿棅棆棌棡棪棿椫椮楎楑楒楙楧楩楪楬榉榐榑榘榰槆槚槢槤槮樅樉樘樬樳樿橏橒橓橔橚橞檍檟檡檭檽櫍櫑櫭櫸欘汌沄沋沘沶沺泘泩泴泿洐洤浤涪淓淔淕淰淲淴渲渻渼湁湉湢湳湸溆溙滏滽漎漵潚潾澋澐濍瀷灂灮炆炔炖炟炢炣烃烇烨烱烴烶烷烺焀焆焌焟焯焴煃熍熜熞熠熥熧熲熻熽熿燀燁燌燝燨燽爀爃爔爖爥獳玟珔珹琭琼瑆瑍瑢瑸璂璔璘璸碽祄祎祹禌禐禑禕禛禟禵禶艹蕹虮蟣訢詝詥誴譓譞釴鈜鈝鈠鈦鈱鉁鉷鉹鉾銑銪鋐鋑鋙鋡鋥鋮鋹鋿錝錥錧鍈鍉鍗鍺鎀鎙鎡鎦鏋鏐鏓鏳鏴鏵鏸鏼鐄鐖鐭鐯鑅钛铕铖铣铧铻锃锗锳镃镏镕镠颎颙馞鯈鱓黡黶＂＃＄％＆＇＊＋－０１２３４５６７８９＜＝＞＠ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ＾＿｀ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ｛｝～𡍨𡎻𡑆𡒊𢣴𣒻𣜬𣴅𣵧𣹟𣿖𤀰𤂾𤆝𤇅𤇥𤇻𤈑𤉹𤊟𤋜𤐨𤬪𧽧𨥌𨧆𨧨𨨣𨨰𨩱𨰜𨰝𩒪𪸔𬃉𭏬𰉠𰉬𰊊𰋁𰍠𰘱𰛭𰜴𰝙𰝠𰞬𰟙𰼧𰼪𰽅");
+const MAIN_MISSING = new Set("≥⿰⿱〃〄々〆〒〓〘〙〚〛〜〝〞〟〠〡〢〣〤〥〦〧〨〩〪〭〮〯〫〬〰〱〲〳〴〵〶〷〸〹〺〻〼〽〾〿㘧㙂㙊㙺㡑㬙㭎㭕㭦㭶㭿㮧㮫㮵㯆㰒㰘㳛㳻㴋㴫㵑㶄㷑㷫㸅㸋䂵䄉䄔䓎䤩䦃䵺佰侎倛僰僵勲喿圳圿坅坋坖坮坺坾垌垍垐垝垬垶垸垹埈埌埛埢埨堁堈堉堢堼堾塎塐塙塨塽墒墡墣墭墱墲墽墿壃壄壐壡妞巃悊愨慭憖昐晀晥暚曕曣朐朾杙杬枍枎枔枞枟枬柌栃栐栭栶桪桱梈梮梸梿棅棆棌棡棪棿椐椫椮楎楑楒楙楧楩楪楬榉榐榑榘榰槆槚槢槤槮樅樉樒樘樬樳樻樿橏橒橓橔橚橞檍檟檡檭檽櫍櫑櫭櫸欘氵汌沄沋沘沶沺泘泩泴泿洐洤浤涪淓淔淕淠淰淲淴渲渻渼湁湉湞湢湳湸溆溙滏滽漎漵潚潾澋澐濍瀷灂灆灮炆炔炖炟炢炣烃烇烨烱烴烶烷烺焀焆焌焞焟焯焴煃熍熑熛熜熞熠熥熧熲熻熽熿燀燁燌燝燨燽爀爃爔爖爚爥獳玟珔珹琭琼瑆瑍瑢瑸璂璔璘璸碽祄祎祹禌禐禑禕禛禟禵禶艹蕹虮蟣訢詝詥誴譓譞釴鈜鈝鈠鈦鈱鉁鉉鉷鉹鉾銑銪鋋鋐鋑鋙鋡鋥鋮鋹鋿錝錥錧鍈鍉鍗鍺鎀鎙鎡鎦鏋鏐鏓鏳鏴鏵鏸鏼鐄鐖鐭鐯鑅钛铉铕铖铣铧铻锃锗锧锳镃镏镕镠颎颙馞鯈鱓黡黶＂＃＄％＆＇＊＋－０１２３４５６７８９＜＝＞＠ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ＾＿｀ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ｛｝～𡍨𡎻𡑆𡒊𢣴𣒻𣜬𣫑𣴅𣵧𣶏𣹟𣿖𤀰𤂾𤆝𤇅𤇥𤇻𤈑𤉹𤊟𤊻𤋜𤐨𤬪𧽧𨥌𨧆𨧨𨨣𨨰𨩱𨰜𨰝𨶲𩒪𪸔𬃉𭏬𭵵𰉠𰉬𰊊𰋁𰍠𰘱𰛭𰜰𰜴𰝙𰝠𰞬𰟙𰼧𰼪𰽅");
 /*==subset-tool:main-missing:end==*/
 /*==subset-tool:rare-chars:start==*/
-const RARE_CHARS = new Set("〚〛〪〭〮〯〫〬〱〲𡍨𡎻𡑆𡒊𢣴𣒻𣜬𣴅𣵧𣹟𣿖𤀰𤂾𤆝𤇅𤇥𤇻𤈑𤉹𤊟𤋜𤐨𤬪𧽧𨥌𨧆𨧨𨨣𨨰𨩱𨰜𨰝𩒪𪸔𬃉𭏬𰉠𰉬𰊊𰋁𰍠𰘱𰛭𰜴𰝙𰝠𰞬𰟙𰼧𰼪𰽅");
+const RARE_CHARS = new Set("〚〛〪〭〮〯〫〬〱〲𡍨𡎻𡑆𡒊𢣴𣒻𣜬𣫑𣴅𣵧𣶏𣹟𣿖𤀰𤂾𤆝𤇅𤇥𤇻𤈑𤉹𤊟𤊻𤋜𤐨𤬪𧽧𨥌𨧆𨧨𨨣𨨰𨩱𨰜𨰝𨶲𩒪𪸔𬃉𭏬𭵵𰉠𰉬𰊊𰋁𰍠𰘱𰛭𰜰𰜴𰝙𰝠𰞬𰟙𰼧𰼪𰽅");
 /*==subset-tool:rare-chars:end==*/
 
 /* ---------- 罕字墨图懒加载（2026-10-15 外置分册） ----------
@@ -346,7 +358,13 @@ const IDS_ALL = /[⿰-⿻]/g;     /* 削符规范化用 */
    内件偏置缩格，偏置系通行 IDS 渲染近似值——目验微调只动此表 */
 const IDS_RECTS = {
   "⿰": [[0, 0, 50, 100], [50, 0, 50, 100]],
-  "⿱": [[0, 0, 100, 50], [0, 50, 100, 50]],
+  "⿱": [[0, -6, 100, 56], [0, 36, 100, 58]],   /* 向中线收拢：扁部件（如艹）居中半格则底留死白，
+     与下格墨图 PNG 顶边距叠成宽中缝（探针实测原 18 份）。上格增高少压扁、下格上移抬高，
+     两格叠而墨迹不撞，中缝收至 7.5 份档。再整体纯平移上 6 份（负 y 出格）：收拢后墨心
+     坠至 56.1 份，小笺/竖排皆见偏低（探针定谳），平移后墨心 50.1、顶距 8.8/底距 8.6 得中，
+     缝宽与部件尺寸不动。上格负 y 系有意悬挑——今数据（⿱艹𪸔）墨迹不出格；来日若有高顶
+     部件（雨/宀 类满格者）顶上或削 ~6 份，届时按格缩高压回，勿回退此平移
+     （盒心对齐系 .ink 审计观感之前提）。此调参只关上下符，⿰⿳ 仍旧格 */
   "⿲": [[0, 0, 100 / 3, 100], [100 / 3, 0, 100 / 3, 100], [200 / 3, 0, 100 / 3, 100]],
   "⿳": [[0, 0, 100, 100 / 3], [0, 100 / 3, 100, 100 / 3], [0, 200 / 3, 100, 100 / 3]],
   "⿴": [[0, 0, 100, 100], [10, 10, 80, 80]],
@@ -601,17 +619,19 @@ function calibrateFallback() {
   }
 }
 
-/* ---------- 繁体数字 ---------- */
-const HAN_DIG = "零壹貳叁肆伍陸柒捌玖";
-/* 1..999 大写合成：位次「第壹位」/ 代标「第拾壹代」/ 在位数用（天数得至百位） */
+/* ---------- 平体数字（2026-10-22 用户定谳：显示侧数皆平写，旧大写废；
+   检索认侧仍两收——数字解析表与年号正则不动。零用「〇」（同日二次定谳）：
+   唯一源＝HAN_DIG 首字，hanNum 中零亦取诸此（如 一百〇一） ---------- */
+const HAN_DIG = "〇一二三四五六七八九";
+/* 1..999 平写合成：位次「第一位」/ 代标「第十一代」/ 在位数用（天数得至百位） */
 function hanNum(n) {
   if (n < 10) return HAN_DIG[n];
-  if (n < 20) return "拾" + (n % 10 ? HAN_DIG[n % 10] : "");
-  if (n < 100) return HAN_DIG[Math.floor(n / 10)] + "拾" + (n % 10 ? HAN_DIG[n % 10] : "");
-  const s = HAN_DIG[Math.floor(n / 100)] + "佰", r = n % 100;
-  return r ? s + (r < 10 ? "零" : "") + hanNum(r) : s;
+  if (n < 20) return "十" + (n % 10 ? HAN_DIG[n % 10] : "");
+  if (n < 100) return HAN_DIG[Math.floor(n / 10)] + "十" + (n % 10 ? HAN_DIG[n % 10] : "");
+  const s = HAN_DIG[Math.floor(n / 100)] + "百", r = n % 100;
+  return r ? s + (r < 10 ? HAN_DIG[0] : "") + hanNum(r) : s;
 }
-/* 即位年逐字大写：1368 → 壹叁陸捌（公元前负号由调用方冠「前」） */
+/* 即位年逐字平写：1368 → 一三六八（公元前负号由调用方冠「前」） */
 const hanDigits = function (y) {
   return String(y).split("").map(function (c) { return HAN_DIG[+c]; }).join("");
 };
@@ -627,7 +647,7 @@ const hanDigits = function (y) {
    （名栏末字下缀一点朱）与 無嗣（排行栏末缀「無嗣」，显示统一繁体）
    ——均简繁并认、均不占栏位；@alias 别名条只入检索不渲染 */
 function parseData(text) {
-  const meta = { title: "", subtitle: "", juan: "", leaf: "", seal: "", thrones: [], aliases: [], genFirst: "" };
+  const meta = { title: "", subtitle: "", juan: "", leaf: "", seal: "", thrones: [], aliases: [], genFirst: "", fiefs: [] };
   const root = { name: "", ti: "", nh: "", mo: "", children: [] };
   const stack = [{ node: root, level: -1 }];
   for (const raw of text.split(/\r?\n/)) {
@@ -635,10 +655,11 @@ function parseData(text) {
     const t = line.trim();
     if (!t || t.startsWith("#")) continue;
     if (t.startsWith("@")) {
-      const m = t.match(/^@(title|subtitle|juan|leaf|seal|rank-word|prince-prefix|focus-skip|watermark|watermark-art|throne-link|throne[^=]*|alias|gen-first)=(.*)$/);
+      const m = t.match(/^@(title|subtitle|juan|leaf|seal|rank-word|prince-prefix|focus-skip|watermark|watermark-art|throne-link|throne[^=]*|alias|gen-first|fief)=(.*)$/);
       if (m) {
         if (m[1] === "alias") meta.aliases.push(m[2].trim());   /* 别名条可多行，按书写序 */
         else if (m[1] === "gen-first") meta.genFirst = m[2].trim();   /* 代数锚，多行后覆前 */
+        else if (m[1] === "fief") meta.fiefs.push(m[2].trim());   /* 藩信息行，一藩一行、按书写序 */
         else if (m[1] !== "throne-link" && m[1].startsWith("throne")) {
           /* @throneN 键号＝检索排序级（2026-10-15 用户定谳）：@throne＝1级
              （帝王）、@throne2＝2级（藩王）、@throne3＝3级（郡王），越号照
@@ -872,8 +893,8 @@ const nodes = [];
 collect(root, 0, nodes);
 
 /* 代数编号锚（@gen-first=主名[|称号]，2026-10-20 用户定谳）：该人所在辈＝
-   第壹代，其上诸辈不占代数（代标带留空白，小笺代数行同略）；无此行或匹配
-   失败＝锚 0（根为第壹代，旧态）。匹配规则同 @alias：带称号按 name+ti 甄别，
+   第一代，其上诸辈不占代数（代标带留空白，小笺代数行同略）；无此行或匹配
+   失败＝锚 0（根为第一代，旧态）。匹配规则同 @alias：带称号按 name+ti 甄别，
    裸名须全树唯一；歧义/无人告警后按无锚视 */
 let GEN_ANCHOR = 0;
 if (meta.genFirst) {
@@ -882,9 +903,69 @@ if (meta.genFirst) {
     return idsStrip(n.name) === idsStrip(key[0]) &&
            (key.length < 2 || !key[1] || idsStrip(n.ti) === idsStrip(key[1]));
   });
-  if (!hits.length) console.warn("[lineage] @gen-first 主名无人匹配，已按无锚视（根为第壹代）：", meta.genFirst);
+  if (!hits.length) console.warn("[lineage] @gen-first 主名无人匹配，已按无锚视（根为第一代）：", meta.genFirst);
   else if (hits.length > 1 && key.length < 2) console.warn("[lineage] @gen-first 裸名重名歧义（须带|称号甄别），已按无锚视：", meta.genFirst);
   else GEN_ANCHOR = hits[0].depth;
+}
+
+/* 藩信息行（@fief=藩名|首封人物名[|称号]|显示串，2026-10-22 用户定谳）：
+   版框内树上之一行（卷首行）常驻单行左对齐——悬浮/钉住/检索定位到该藩
+   之人即显显示串，无信息则空行（行高恒占、切换零跳动）。藩属＝锚（首封
+   藩王）支头＋其下全体男系后裔（含郡王子支与名单外宗室），嵌套锚最近
+   支头优先（head.depth 深者胜，与书写序无关）；显示串照显径用不解析语义
+   （以藩名开头则藩名析出墨重首段——按藩名字段切割，仍非解析文串），
+   内禁竖线（字段数 3–4 由此有定，逾则告警跳过）；锚匹配同 @alias 规
+   （带称号按 name+ti 全串、裸名须全树唯一、IDS 削符并认），歧义/无人
+   告警跳过；藩名重复前行生效、同支头双藩后行跳过（validate 镜像同查）。
+   数据驱动：无 @fief 之壳槽/条整条不建、FIEF_H=0 版面分毫不动——
+   清/晋/模板壳零扰（藩设计仅限明壳，2026-10-14 定谳之续） */
+const fiefs = [];            /* {name, head, text} 生效者按书写序 */
+const fiefOf = new Map();    /* 节点 → 藩（最近支头优先） */
+let FIEF_H = 0, fiefSlot = null, fiefBar = null, fiefNameEl = null, fiefTxtEl = null;
+if ((meta.fiefs || []).length) {
+  const seenFief = new Map();   /* 藩名 → 序（重复前行生效） */
+  const seenHead = new Map();   /* 锚节点 → 藩名（同支头双藩后行跳过） */
+  meta.fiefs.forEach(function (entry) {
+    const parts = entry.split("|").map(function (s) { return s.trim(); });
+    if (parts.length < 3 || parts.length > 4 || !parts[0] || !parts[1]) {
+      console.warn("[lineage] @fief 应书 藩名|首封人物名[|称号]|显示串（显示串不得含竖线），已跳过：", entry);
+      return;
+    }
+    const name = parts[0], text = parts[parts.length - 1];
+    if (!text) { console.warn("[lineage] @fief 显示串为空，已跳过：", name); return; }
+    const key = parts.length === 4 ? [parts[1], parts[2]] : [parts[1]];
+    const hits = nodes.filter(function (n) {   /* IDS 削符并认（@alias 同规） */
+      return idsStrip(n.name) === idsStrip(key[0]) &&
+             (key.length < 2 || !key[1] || idsStrip(n.ti) === idsStrip(key[1]));
+    });
+    if (!hits.length) { console.warn("[lineage] @fief 首封人物名无人匹配，该藩信息行不出，已跳过：", entry); return; }
+    if (hits.length > 1 && key.length < 2) { console.warn("[lineage] @fief 裸名重名歧义（须带|称号甄别），已跳过：", entry); return; }
+    if (seenFief.has(name)) { console.warn("[lineage] @fief 藩名重复（前行生效），后行已跳过：", name); return; }
+    const head = hits[0];
+    if (seenHead.has(head)) { console.warn("[lineage] @fief 同支头已属「" + seenHead.get(head) + "」，后行已跳过：", name); return; }
+    seenFief.set(name, fiefs.length);
+    seenHead.set(head, name);
+    const fief = { name: name, head: head, text: text };
+    fiefs.push(fief);
+    (function mark(nd) {   /* 整支归藩；嵌套锚最近支头优先（深 head 覆浅层，序无关） */
+      const prev = fiefOf.get(nd);
+      if (!prev || prev.head.depth < head.depth) fiefOf.set(nd, fief);
+      nd.children.forEach(mark);
+    })(head);
+  });
+}
+if (fiefs.length) {
+  FIEF_H = px("--lineage-fief-h");   /* 预留行高＝版框上线让位 14＋行条 32（css 注） */
+  fiefSlot = document.createElement("div");
+  fiefSlot.id = "fief-slot";
+  fiefBar = document.createElement("div");
+  fiefBar.id = "fief-bar";
+  fiefBar.setAttribute("role", "status");   /* 藩文随悬浮更易，辅助技术活区播报 */
+  fiefNameEl = document.createElement("span"); fiefNameEl.className = "fief-name";
+  fiefTxtEl = document.createElement("span"); fiefTxtEl.className = "fief-txt";
+  fiefBar.appendChild(fiefNameEl); fiefBar.appendChild(fiefTxtEl);
+  fiefSlot.appendChild(fiefBar);
+  board.prepend(fiefSlot);   /* board 唯一流内成员：自然落卷首（余皆 absolute 不争位） */
 }
 
 /* 君位传承名单（@throne / @throneN，一行一名单、可多行，按书写序；
@@ -901,8 +982,8 @@ if (meta.genFirst) {
    连线仅父子血缘墨线）。
    藩名单：前缀含「藩」（如 趙藩:、鄭藩新平:）者——成员入 princeSet 不入
    throneSet：诸栏不加粗、其子排行不冠皇字；位次栏＝「@prince-prefix
-   值＋第N位＋藩名王」，藩名＝藩后诸字、无则藩前（趙藩→明朝第壹位趙王，
-   鄭藩新平→明朝第壹位新平王；@prince-prefix 省则用书写前缀）；
+   值＋第N位＋藩名王」，藩名＝藩后诸字、无则藩前（趙藩→明朝第一位趙王，
+   鄭藩新平→明朝第一位新平王；@prince-prefix 省则用书写前缀）；
    浮层照进（每藩独立小链，@focus-skip=藩前缀 可剔除）。
    藩设计仅限明壳（2026-10-14 用户定谳，勿扩他朝）；空名单（冒号后无
    条目）合法无害——占位待填，不告警 */
@@ -975,23 +1056,34 @@ function resolveEntry(g, e) {
 const throneSet = new Set();       /* 帝系名单成员节点（加粗、排行冠皇、深链代钉） */
 const princeSet = new Set();       /* 藩名单成员节点（位次照授；不加粗、不冠皇） */
 const throneTitle = new Map();     /* 节点 → 「前缀＋第N位＋位次用字」（藩＝藩名王） */
+const throneTitleSrc = new Map();  /* 节点 → 授出现行位次的名单（跨级压级判级用，指向显示词之主） */
+/* 一人挂多名单之位次定谳（2026-10-22 用户）：同级（键号同）后书覆盖前书
+   （朱載䵺挂 襄藩隆慶/襄藩鄖城 两名单例：鄖城后书 → 显「明朝第一位鄖城王」）；
+   跨级高级（键号小）压低级——低级名单不改其词而仍占号，号＝该名单传承实位
+   （与「朱线所有传承皆计入」同构）；复辟重入（同名单再入）照旧不占号不改词；
+   即位栏结词（nodeSuffix）仍首现锁定、检索级 _lvl 仍取最小号——别规则勿连坐 */
 groups.forEach(function (g) {
   let ord = 0;
   g.resolved = g.entries.map(function (e) {
     const n = resolveEntry(g, e);
     if (n) {
       (g.prince ? princeSet : throneSet).add(n);
-      if (!throneTitle.has(n)) {   /* 复辟重入不占号：仅首现授位次时递增 */
-        throneTitle.set(n, g.prince
-          ? (PRINCE_PREFIX || g.prefix) + "第" + hanNum(++ord) + "位" + g.pname + "王"
-          : g.prefix + "第" + hanNum(++ord) + "位" + RANK_WORD);
+      const src = throneTitleSrc.get(n);
+      if (src !== g) {             /* 同名单重入＝复辟：不占号不改词 */
+        if (!src || g.level <= src.level) {   /* 首授，或同级后书覆盖，或高级压低级 */
+          throneTitle.set(n, g.prince
+            ? (PRINCE_PREFIX || g.prefix) + "第" + hanNum(++ord) + "位" + g.pname + "王"
+            : g.prefix + "第" + hanNum(++ord) + "位" + RANK_WORD);
+          throneTitleSrc.set(n, g);
+        } else ++ord;              /* 跨级压级之败者：占号不改词（src 仍指高级名单） */
       }
     }
     return n;
   });
 });
 /* 即位栏结词：按节点所属名单首现之位取词——首条＝firstWord、
-   后续＝nextWord；复辟重入或跨名单者以首次指派为定（与位次首现序同则）。
+   后续＝nextWord；复辟重入或跨名单者以首次指派为定——首现锁定（2026-10-22
+   定谳：与位次「同级后书覆盖/跨级压级」各归各，结词不随覆盖走）。
    名单外节点偶书年段者兜底结「即位」（见即位栏渲染处） */
 const nodeSuffix = new Map();
 groups.forEach(function (g) {
@@ -1129,7 +1221,7 @@ for (const n of shown) {
     });
     d.appendChild(ti);
   }
-  if ((n.parent && n.parent.name) || n.ws) {   /* 排行（左最外·黑）：父下齿序自动——長子/次子/叁子…（叁起大写），父在任一 @throne 名单者冠皇字（仅 @rank-word 为「皇帝」时；先秦用字则径称長子）；根无父不栏——惟書無嗣者虽无父亦立栏（标记不丢，排行/序齒文本仍须有父方发） */
+  if ((n.parent && n.parent.name) || n.ws) {   /* 排行（左最外·黑）：父下齿序自动——長子/次子/三子…（三起平数），父在任一 @throne 名单者冠皇字（仅 @rank-word 为「皇帝」时；先秦用字则径称長子）；根无父不栏——惟書無嗣者虽无父亦立栏（标记不丢，排行/序齒文本仍须有父方发） */
     rk = document.createElement("div"); rk.className = "rk";
     if (n.parent && n.parent.name) {
       const idx = n.parent.children.indexOf(n) + 1;
@@ -1141,7 +1233,7 @@ for (const n of shown) {
       const gap = document.createElement("span");
       gap.className = "ch"; gap.textContent = " ";
       const xcs = document.createElement("span");
-      setWrapped(xcs, "序齒" + (n.xc === 1 ? "長" : n.xc === 2 ? "次" : hanNum(n.xc)) + "子", true, bad);   /* 同齿序用字：長/次/叁起大写 */
+      setWrapped(xcs, "序齒" + (n.xc === 1 ? "長" : n.xc === 2 ? "次" : hanNum(n.xc)) + "子", true, bad);   /* 同齿序用字：長/次/三起平数 */
       rk.appendChild(gap); rk.appendChild(xcs);
     }
     if (n.ws) {   /* 無嗣（独立段手书）：排行（有序齒则序齒）后空一字接排，
@@ -1160,7 +1252,7 @@ for (const n of shown) {
   if (n.segs && n.segs.length) {   /* 即位/在位（君主/藩王行尾年段）：两栏各按有无
       独立生成（年与年数得单书，缺栏递补贴位）——即位栏串有年诸段「与」接结
       名单结词（nodeSuffix，@throne 括号对定之）；在位栏合有年数诸段：年月并月
-      （1年=12月）、天自为计——天不升格为月，数皆大写：纯年显年（按单位判，
+      （1年=12月）、天自为计——天不升格为月，数皆平写：纯年显年（按单位判，
       裸 0 含零年）、满一年显年（弃月弃天）、满一月显月（弃天）、纯天显天
       （0天 显零天）；未蒞段整栏优先只显「未蒞」二字（异体「莅」折正字「蒞」）；
       即位段数与年号 run 数互校 */
@@ -1170,7 +1262,7 @@ for (const n of shown) {
       ji = document.createElement("div"); ji.className = "ji";
       setWrapped(ji, ySegs.map(function (s) {
         return (s.y < 0 ? "前" : "") + hanDigits(Math.abs(s.y)) + "年";
-      }).join("与") +   /* 段年自足「前＋数＋年」、段间「与」顺接：壹肆叁伍年与壹肆伍柒年即位 */
+      }).join("与") +   /* 段年自足「前＋数＋年」、段间「与」顺接：一三四五年与一四五七年即位 */
          (nodeSuffix.get(n) || "即位"), true, bad);   /* 名单外书年段者兜底「即位」 */
       d.appendChild(ji);
     }
@@ -1284,7 +1376,7 @@ for (const n of shown) {
 }
 
 /* 3. 行高与行顶（行间留走线道）；无显示节点的辈分不占行（行带/代标亦跳过），
-   代标按真实辈序编号（第N代，@gen-first 锚在位则自锚辈起壹号、其上诸辈
+   代标按真实辈序编号（第N代，@gen-first 锚在位则自锚辈起一号、其上诸辈
    不占代数），跳辈处留空不补号 */
 const levelH = [];
 for (const n of shown) {
@@ -1293,13 +1385,13 @@ for (const n of shown) {
 const depths = [];
 for (let d = 0; d < levelH.length; d++) if (levelH[d]) depths.push(d);
 const levelTop = [];
-let acc = FR_T + padT;
+let acc = FR_T + padT + FIEF_H;   /* 藩信息行预留行高整树随之下移（无 @fief 之壳 FIEF_H=0 旧态） */
 for (const d of depths) { levelTop[d] = acc; acc += levelH[d] + GAP_Y; }
 const boardH = acc - GAP_Y + padB;
 
 const boardW = ORIGIN + dRoot.w + padM + COL_W + padR + FR_R;  /* 树区 + 题名条 */
 
-/* 3b. 代标：版框内最左代标带，逐辈竖排「第壹代…」，与该辈行带垂直居中；
+/* 3b. 代标：版框内最左代标带，逐辈竖排「第一代…」，与该辈行带垂直居中；
    锚上诸辈（@gen-first）整带留空白——不建 .gen 元素（用户定谳） */
 for (const d of depths) {
   const genNo = d + 1 - GEN_ANCHOR;
@@ -1317,7 +1409,7 @@ calibrateFallback();   /* 幂等复跑：收代标带（.gen 宽度已定，无�
 
 /* 4. 题头：竖题居右，如挂轴卷端题识（无栏线，仅留白条） */
 heading.style.left = (ORIGIN + dRoot.w + padM) + "px";
-heading.style.top = (FR_T + 26) + "px";
+heading.style.top = (FR_T + 26 + FIEF_H) + "px";   /* 题识随树同移（藩信息行让位） */
 
 /* 4b. 方印（可选 @seal=图径）：右端题识正下之方印，边长定值 100px、
    题识块（COL_W 130）下居中；正片叠底令白文透纸。
@@ -1719,11 +1811,66 @@ for (const n of shown) {
     ev.stopPropagation();
     pinned = (pinned === n) ? null : n;
     applyFocus(pinned || hovered);
+    syncFief();   /* 藩信息行与钉住联动进退（2026-10-22 定谳；syncFief 见下节，事件晚发无 TDZ 之虞） */
   });
 }
 document.addEventListener("click", function () {   /* 点空白解除钉住 */
-  if (pinned) { pinned = null; applyFocus(hovered); }
+  if (pinned) { pinned = null; applyFocus(hovered); syncFief(); }
 });
+
+/* ── 藩信息行接线（2026-10-22 用户定谳，解析/建体见「藩信息行」节） ──
+   悬浮＝预览：藩属全节点皆挂（含名单外宗室——传位层悬浮只挂名单成员，
+   此处另挂全树，同元素并存不悖）；钉住＝复用传位层 pinned（联动进退：
+   钉住/点空白/Esc 处皆已补 syncFief）；检索定位联动（locate 写 fiefHover，
+   名单外宗室亦同）。优先 pinned > fiefHover，皆无则空行（行高常驻，
+   悬浮切换全卷零跳动）。粘顶 JS 兜底：纵滚在 body、main 仅横滚
+   （overflow-y:hidden 吞 sticky 纵轴）——监听 window scroll 切 .pin
+   （fixed 钉视口顶、zoom:var(--unzoom) 抵根缩放、视观 1:1 寻人/水印同法），
+   横轴 CSS sticky left 照常（main 即横滚容器，横滚深处字随左缘恒可读）。
+   判据 r.top<0 严格小于：卷首自然位 slot top 恰 0，页顶不误钉 */
+let fiefHover = null;                 /* 信息条当前关注之人（悬浮或检索定位所写） */
+let fiefShown = null;                 /* 已渲之藩（memo：同藩不重渲，支内悬浮频繁） */
+const syncFief = function () {
+  if (!fiefBar) return;
+  const t = pinned || fiefHover;
+  const f = (t && fiefOf.get(t)) || null;
+  if (f === fiefShown) return;
+  fiefShown = f;
+  if (!f) {
+    fiefNameEl.textContent = ""; fiefTxtEl.textContent = "";
+    fiefBar.title = "";
+    return;
+  }
+  fiefBar.title = f.text;             /* 原生 tooltip 恒备全文（钉住态截断时悬停信息条自览） */
+  if (f.text.startsWith(f.name)) {    /* 显示串以藩名开头 → 首段析出墨重；否则全串入文段 */
+    setWrapped(fiefNameEl, f.name, false);
+    setWrapped(fiefTxtEl, f.text.slice(f.name.length), false);
+  } else {
+    fiefNameEl.textContent = "";
+    setWrapped(fiefTxtEl, f.text, false);
+  }
+};
+if (fiefBar) {
+  for (const n of shown) {
+    const el = els.get(n);
+    el.addEventListener("mouseenter", function () { fiefHover = n; if (!pinned) syncFief(); });
+    el.addEventListener("mouseleave", function () {
+      if (fiefHover === n) { fiefHover = null; if (!pinned) syncFief(); }
+    });
+  }
+  const pinTick = function () {
+    /* 判据 r.top<0 严格小于：卷首自然位 slot top 恰 0，页顶不误钉。
+       钉住下界＝board 底缘（sticky 之高容器等价物）而非 slot 底缘——
+       slot 仅一行高，滚逾即判「出屏」会致板尚在屏而误解钉（探针实证：
+       明壳全页纵深不足两千视观 px，滚到底 slot 早没而树犹在）；
+       整板滚出（页脚现）方归卷首原位 */
+    fiefBar.classList.toggle("pin",
+      fiefSlot.getBoundingClientRect().top < 0 && board.getBoundingClientRect().bottom > 0);
+  };
+  window.addEventListener("scroll", pinTick, { passive: true });
+  window.addEventListener("resize", pinTick);
+  pinTick();
+}
 
 /* ── 键盘导航（渐进增强，2026-10-15；引擎全生成、壳零改） ─────────────
    漫游 tabindex：tab 序中恒只一个节点（当前焦点人，初态＝始祖，locate
@@ -1766,7 +1913,7 @@ board.addEventListener("keydown", function (ev) {
   const n = elOwner.get(el);
   if (!n) return;
   if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); el.click(); return; }
-  if (ev.key === "Escape") { if (pinned) { pinned = null; applyFocus(hovered); } return; }
+  if (ev.key === "Escape") { if (pinned) { pinned = null; applyFocus(hovered); syncFief(); } return; }
   let t = null;
   if (ev.key === "ArrowUp") {
     t = (n.parentD && n.parentD.name) ? n.parentD : null;
@@ -1798,7 +1945,7 @@ board.style.height = boardH + "px";
    年份检索（2026-10-14 用户定谳）：整串书「(公元前|前)数字年」即入——
      阿拉伯或汉字数字（含单位字按位值、纯数字字逐位拼接，详 yearQuery 注），
      中其年在位者：闭区间 [即位年, 即位年＋在位数]，复辟逐段独立折算、
-     小笺第二行只显所中段起讫（在位壹肆叁伍—壹肆肆玖）；欠在位数或
+     小笺第二行只显所中段起讫（在位一三四五—一四四九）；欠在位数或
      月/天精度只中即位年当年，无即位年之段不中；结果按段起始年升序，
      同年按级（@throne 键号）、同级按代数。
    深链（2026-10-15 起年深链并收）：#人名 开页即定位加亮（字体就绪后
@@ -1817,29 +1964,29 @@ board.style.height = boardH + "px";
      对照全集，数据添字后重跑即补，表字随 subset-fonts.mjs 自动入子集）；
      表只求自洽（同字同折、两侧一致），不求语言学精确，幹/乾多归一无碍
      匹配。折叠字段 _f* 建索引时一次算成。 */
-/* T2S 表：tools/gen-t2s.mjs 据内收 OpenCC 字表生成（384 对＝数据块用字繁简对照全集∪旧表），勿手改；数据添字后重跑该工具，再 subset-fonts.mjs（表字自动入子集）。 */
+/* T2S 表：tools/gen-t2s.mjs 据内收 OpenCC 字表生成（389 对＝数据块用字繁简对照全集∪旧表），勿手改；数据添字后重跑该工具，再 subset-fonts.mjs（表字自动入子集）。 */
 const T2S_SRC =
   "乾佔來侖倉個倫側傑傳僑儀兒兩別剛劉勝勳勵厲吳呂啟喚單嚴國圖堅堯塊塏塵壽嬪嬰孫寧寫寶將" +
   "尋對層峯崗嶽師帶幹庫廢廣廬張彌後復恆愛愨愷慶憖憫憲應懷懸掄揚換擊據數於時晉晝暉曆書會" +
-  "東棄棖棗棟棡楊楨極榘榦榮構槤槮樂樅標樞樳樸樺樿檟檢檳櫸欄權欒欽歷歸殤沖涇淨減渾湯溈準" +
-  "溫滄漢漬漵潁潔潙潚潛潤澐澤澱濟濤瀝瀾灃為烏烴無煉煒煙煥熲熾燁燉燦爲爾獨獲獻瑪璉璸瓊甌" +
-  "畢畫當發監盧碩碽祐祕祿禎禕禪禮稜稱筆節範簡紀納純紱紹絡統綏綬綱綴綿緒線緡緯縮繆繼續羅" +
-  "聖聰肅臘臨與興荊莊華萬葉蒞蔣蕩蕭薊蘄蘇蘭虛號蝨蟣衛袞裏襲見視親覺觀計記訢許詭認誠談諸" +
-  "謙謝謹讓豎豐貝貞負貳貴費賈賓賕賢質賴賽趙車軍載輔輝輩輿轉農連進過達遜遼鄉鄒鄖鄧鄭釋釘" +
-  "鈕鈞鈦鈴鈺鉅鉗鉞鉦銑銓銘銪銳鋏鋙鋥鋮錙錢錫鍈鍔鍵鍺鍼鍾鎔鎡鎦鎧鎬鎮鏐鏞鏡鏵鐘鐯鐵鐸鑄" +
-  "鑌鑑鑿長開閔閻關闢陞陰陳陸陽隱雙靈靜韋韓韜頃順須頎頤題額顏顒類顯餘館饒馬馮驕驩驪魯鹹" +
-  "麗黃點黶齊齒";
+  "東棄棖棗棟棡楊楨極榘榦榮構槤槮樂樅標樞樳樸樺樿檟檢檳櫛櫸欄權欒欽歷歸殤沖涇淨減渾湯溈" +
+  "準溫滄漢漬漵潁潔潙潚潛潤澐澤澱濟濤瀝瀾灃為烏烴無煉煒煙煥熲熾燁燉燦爲爾獨獲獻瑪璉璸瓊" +
+  "甌畢畫當發監盧碩碽祐祕祿禎禕禪禮稜稱筆節範簡紀納純紱紹絡統綏綬綱綴綿緒線緡緯縮繆繼續" +
+  "羅聖聰肅臘臨與興荊莊華萬葉蒞蔣蕩蕭薊蘄蘇蘭虛號蝨蟣衛袞裏襲見視親覺觀計記訢許詭認誠談" +
+  "諸謙謝謹讓豎豐貝貞負貳貴費賈賓賕賢質賴賽趙車軍載輔輝輩輿轉農連進過達遜遼鄉鄒鄖鄧鄭釋" +
+  "釘鈕鈞鈦鈴鈺鉅鉉鉗鉞鉦銑銓銘銪銳鋏鋙鋥鋮錙錢錫鍈鍔鍵鍺鍼鍾鎔鎡鎦鎧鎬鎮鏐鏞鏡鏵鐘鐯鐵" +
+  "鐸鑄鑌鑑鑕鑾鑿長開閔閻關闢陞陰陳陸陽隱雙靈靜韋韓韜頃順須頎頤題額顏顒類顯餘館饒馬馮驕" +
+  "驩驪魯鹹麗黃點黶齊齒龍";
 const T2S_DST =
   "干占来伦仓个伦侧杰传侨仪儿两别刚刘胜勋励厉吴吕启唤单严国图坚尧块垲尘寿嫔婴孙宁写宝将" +
   "寻对层峰岗岳师带干库废广庐张弥后复恒爱悫恺庆慭悯宪应怀悬抡扬换击据数于时晋昼晖历书会" +
-  "东弃枨枣栋㭎杨桢极矩干荣构梿椮乐枞标枢桪朴桦椫槚检槟榉栏权栾钦历归殇冲泾净减浑汤沩准" +
-  "温沧汉渍溆颍洁沩㴋潜润沄泽淀济涛沥澜沣为乌烃无炼炜烟焕颎炽烨炖灿为尔独获献玛琏瑸琼瓯" +
-  "毕画当发监卢硕䂵佑秘禄祯祎禅礼棱称笔节范简纪纳纯绂绍络统绥绶纲缀绵绪线缗纬缩缪继续罗" +
-  "圣聪肃腊临与兴荆庄华万叶莅蒋荡萧蓟蕲苏兰虚号虱虮卫衮里袭见视亲觉观计记欣许诡认诚谈诸" +
-  "谦谢谨让竖丰贝贞负贰贵费贾宾赇贤质赖赛赵车军载辅辉辈舆转农连进过达逊辽乡邹郧邓郑释钉" +
-  "钮钧钛铃钰巨钳钺钲铣铨铭铕锐铗铻锃铖锱钱锡锳锷键锗针钟镕镃镏铠镐镇镠镛镜铧钟䦃铁铎铸" +
-  "镔鉴凿长开闵阎关辟升阴陈陆阳隐双灵静韦韩韬顷顺须颀颐题额颜颙类显余馆饶马冯骄欢丽鲁咸" +
-  "丽黄点黡齐齿";
+  "东弃枨枣栋㭎杨桢极矩干荣构梿椮乐枞标枢桪朴桦椫槚检槟栉榉栏权栾钦历归殇冲泾净减浑汤沩" +
+  "准温沧汉渍溆颍洁沩㴋潜润沄泽淀济涛沥澜沣为乌烃无炼炜烟焕颎炽烨炖灿为尔独获献玛琏瑸琼" +
+  "瓯毕画当发监卢硕䂵佑秘禄祯祎禅礼棱称笔节范简纪纳纯绂绍络统绥绶纲缀绵绪线缗纬缩缪继续" +
+  "罗圣聪肃腊临与兴荆庄华万叶莅蒋荡萧蓟蕲苏兰虚号虱虮卫衮里袭见视亲觉观计记欣许诡认诚谈" +
+  "诸谦谢谨让竖丰贝贞负贰贵费贾宾赇贤质赖赛赵车军载辅辉辈舆转农连进过达逊辽乡邹郧邓郑释" +
+  "钉钮钧钛铃钰巨铉钳钺钲铣铨铭铕锐铗铻锃铖锱钱锡锳锷键锗针钟镕镃镏铠镐镇镠镛镜铧钟䦃铁" +
+  "铎铸镔鉴锧銮凿长开闵阎关辟升阴陈陆阳隐双灵静韦韩韬顷顺须颀颐题额颜颙类显余馆饶马冯骄" +
+  "欢丽鲁咸丽黄点黡齐齿龙";
 const T2S = {};
 for (let i = 0; i < T2S_SRC.length; i++) T2S[T2S_SRC[i]] = T2S_DST[i];
 const fold = function (s) {
@@ -1949,6 +2096,7 @@ const locate = function (n) {
   clearTimeout(foundTimer);
   foundTimer = setTimeout(function () { el.classList.remove("found"); }, 2400);
   if (hoverables.has(n)) { pinned = n; applyFocus(n); }   /* 君主：代钉传位层（含单人名单） */
+  fiefHover = n; syncFief();   /* 检索定位联动藩信息行（2026-10-22 定谳；名单外宗室亦同） */
   kSet(n, false);   /* 漫游制表位随定位移就：此后 Tab 入板即落其人，方向键续走（不移焦、不夺滚动） */
   setHash(n);
 };

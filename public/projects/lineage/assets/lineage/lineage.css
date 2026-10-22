@@ -23,12 +23,12 @@ html { zoom: 0.5; }
    value 等未包裹语境赖此）；woff2 内容变更须同步进 src 之 ?v= 令牌破缓存 */
 @font-face {
   font-family: "文悦古体仿宋2";
-  src: url("../fonts/wenyue-guti-fangsong-2.woff2?v=20261021b") format("woff2");
+  src: url("../fonts/wenyue-guti-fangsong-2.woff2?v=20261022a") format("woff2");
   font-display: swap;
 }
 @font-face {
   font-family: "LXGW WenKai Fallback";
-  src: url("../fonts/LXGWWenKaiMono-Light.woff2?v=20261021b") format("woff2");
+  src: url("../fonts/LXGWWenKaiMono-Light.woff2?v=20261022a") format("woff2");
   font-display: swap;
 }
 
@@ -122,6 +122,8 @@ svg { display: block; max-width: 100%; height: auto; }
                                【回退锚】抬升前 40px ↔ 墨隙 32px——墨隙不
                                满意时改回 40 即全量复原（本常量单点原子） */
   --lineage-off-y:  40px;   /* 首行上垫 */
+  --lineage-fief-h: 46px;   /* 藩信息行预留行高（版框上线让位 14＋行条 32）；
+                               仅有 @fief 之壳占位（引擎 FIEF_H），他壳 0 不扰 */
   --lineage-side-gap: 6px;  /* 侧栏与名字之间的贴距（空栏向内递补时逐栏累加） */
   --lineage-guard:  32px;   /* 版框线与任何字盒的最小净距（结构保护） */
   --lineage-gen-w:  34px;   /* 版框内左侧代标带宽度（第壹代…竖排坐落处） */
@@ -217,6 +219,40 @@ main { overflow-x: auto; overflow-y: hidden; }
 /* 方印（可选 @seal）：右端题识下之方印，边长定值 100px、题识块下居中；正片叠底透纸。
    纵向定位在引擎：Range 量题识文字实际底缘＋恒距（SEAL_GAP），不覆字；字体就绪后重定位 */
 .seal { position: absolute; z-index: 1; pointer-events: none; mix-blend-mode: multiply; }
+
+/* ====== 藩信息行（卷首行·粘顶，2026-10-22 用户定谳）：仅有 @fief 之壳由
+   引擎建体（board 首个流内成员），他壳无此节点、本节规则空转 ======
+   版框内树上之一行常驻单行左对齐：悬浮/钉住/检索定位到藩属之人显该藩
+   @fief 显示串（照显径用；以藩名开头则藩名析出墨重首段 .fief-name），
+   无信息空行——行高恒占（--lineage-fief-h，引擎 levelTop 原点同抬，
+   check-lines 朱线基线随之重建）、悬浮切换全卷零跳动。
+   粘顶 JS 兜底（.pin 由引擎监听 window scroll 切换）：纵滚在 body、
+   main 仅横滚（overflow-y:hidden 吞 sticky 纵轴）——钉态 fixed 视口顶、
+   zoom:var(--unzoom) 抵根缩放视观 1:1（水印/寻人件同法）；横轴原生
+   sticky left 生效（main 即横滚容器，长卷横滚深处字随左缘恒可读）。
+   单行硬约束：nowrap＋截断省略号，全文恒在 title（钉态悬停信息条自览）。
+   行条字阶：自然态随板缩（小字同位次/称号级），钉态 1:1 复原（--han-fs-sm） */
+#fief-slot { height: var(--lineage-fief-h); padding-top: 14px; }   /* 14＝FR_T：行条避版框上线 */
+#fief-bar {
+  position: sticky; left: 0;
+  width: fit-content; max-width: 100%;
+  height: 32px; line-height: 32px;
+  padding: 0 12px 0 64px;   /* 左缘齐版框左内缘（FR_L=64） */
+  font-size: var(--han-fs-xs);
+  color: var(--han-color-text-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#fief-bar .fief-name { font-weight: 700; color: var(--han-color-ink-800); }
+#fief-bar.pin {
+  position: fixed; top: 0; left: 0; right: 0; width: auto;
+  z-index: 4;               /* 节点/题识（z1）上、寻人/缩放条（z5）下 */
+  zoom: var(--unzoom);      /* 视观 1:1（水印/寻人件同法；窄屏断点归 1） */
+  height: 36px; line-height: 36px;
+  padding: 0 16px;
+  font-size: var(--han-fs-sm);
+  background: color-mix(in srgb, #fffdf7 97%, var(--han-color-ink-700));   /* 近实纸色：树文不透显 */
+  border-bottom: 1px solid color-mix(in srgb, var(--han-color-ink-800) 24%, transparent);
+}
 
 /* ====== 版框：粗墨单线大框（仿宋刻本版框），左让书口 ======
    墨洇：主线以 feTurbulence 位移出不规则内外溢边；
@@ -429,8 +465,13 @@ main { overflow-x: auto; overflow-y: hidden; }
   position: relative;
   vertical-align: middle;     /* 竖排栏：块轴取中＋校准（.ink 同理） */
 }
+/* .ids-t 必须行内流（static）勿改 absolute：vertical-align 负值对齐的是
+   元素自身基线——.ink 盒内有真文本，基线＝其内文基线；.ids 若子级全出流
+   （空 inline-block）基线＝下边棱，同值 -0.25em 之下 .ids 盒比 .ink 沉
+   2px@12px（探针实证：同 <b> 并排差 2.0px）。透明原串留流内即与 .ink
+   同构（同字号/行高/字体链），审计定值方得真承；溢出为透明不可见，
+   盒宽定死 1em 不受撑 */
 .ids > .ids-t {
-  position: absolute; left: 0; top: 0;
   color: transparent; white-space: nowrap; pointer-events: none;
 }
 /* 合成 SVG user-select:none——内 <text> 部件字非真文本，选区/复制只取
