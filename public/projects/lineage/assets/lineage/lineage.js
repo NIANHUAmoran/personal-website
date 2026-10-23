@@ -33,7 +33,8 @@
  *     位置无关——习惯收行尾，年段之后亦合法；一行至多一个），解析时
  *     先摘（不占字段位、不误触年段归类告警），显示为排行后空一字接排
  *     「序齒N子」（序數同齿序用字：1 長、2 次、三起平数；同墨黑）；
- *     不写即无（殤夭未序齒者省）
+ *     不写即无（殤夭未序齒者省）；无父（树根）而手书序齒者亦立栏
+ *     径发——自动齿序须有父，手书序齒不须（2026-10-24 用户定谳特判）
  *     排行栏得缀無嗣：行内独立段「無嗣」（简繁均认；位置无关、一行至多
  *     一个，解析先摘同上），显示为排行（有序齒则序齒）后空一字接排
  *     「無嗣」（显示统一繁体；同墨黑、同随栏加粗）；無嗣而有后则告警
@@ -1231,7 +1232,7 @@ for (const n of shown) {
     });
     d.appendChild(ti);
   }
-  if ((n.parent && n.parent.name) || n.ws) {   /* 排行（左最外·黑）：父下齿序自动——長子/次子/三子…（三起平数），父在任一 @throne 名单者冠皇字（仅 @rank-word 为「皇帝」时；先秦用字则径称長子）；根无父不栏——惟書無嗣者虽无父亦立栏（标记不丢，排行/序齒文本仍须有父方发） */
+  if ((n.parent && n.parent.name) || n.ws || n.xc) {   /* 排行（左最外·黑）：父下齿序自动——長子/次子/三子…（三起平数），父在任一 @throne 名单者冠皇字（仅 @rank-word 为「皇帝」时；先秦用字则径称長子）；根无父不栏——惟書無嗣或手书序齒者虽无父亦立栏（标记不丢，2026-10-24 用户定谳特判：树根朱仲八书「序齒2」而无父，旧规排行/序齒文本须有父方发致整栏不发；自动齿序仍须有父，手书序齒/無嗣文本根上径发） */
     rk = document.createElement("div"); rk.className = "rk";
     if (n.parent && n.parent.name) {
       const idx = n.parent.children.indexOf(n) + 1;
@@ -1240,20 +1241,28 @@ for (const n of shown) {
     }
     if (n.xc) {   /* 序齒（数据行手书）：排行后空一字接排「序齒N子」，
                      同墨黑（不似年号着朱）、同随栏加粗 */
-      const gap = document.createElement("span");
-      gap.className = "ch"; gap.textContent = " ";
+      if (rk.childNodes.length) {   /* 空格仅随栏内已有前文（自动齿序）方插——
+                     根无父而手书序齒者栏首本空，悬空一格会把整段顶下一字失顶对齐
+                     （2026-10-24 朱仲八探针修正） */
+        const gap = document.createElement("span");
+        gap.className = "ch"; gap.textContent = " ";
+        rk.appendChild(gap);
+      }
       const xcs = document.createElement("span");
       setWrapped(xcs, "序齒" + (n.xc === 1 ? "長" : n.xc === 2 ? "次" : hanNum(n.xc)) + "子", true, bad);   /* 同齿序用字：長/次/三起平数 */
-      rk.appendChild(gap); rk.appendChild(xcs);
+      rk.appendChild(xcs);
     }
     if (n.ws) {   /* 無嗣（独立段手书）：排行（有序齒则序齒）后空一字接排，
                      同墨黑、同随栏加粗；数据自校——無嗣而有后则告警（不删标） */
       if (n.children.length) console.warn("[lineage] 無嗣而有后，数据自相矛盾：", n.name);
-      const gap = document.createElement("span");
-      gap.className = "ch"; gap.textContent = " ";
+      if (rk.childNodes.length) {   /* 空格随前文方插（同序齒例）：根上孤标無嗣不悬空一格 */
+        const gap = document.createElement("span");
+        gap.className = "ch"; gap.textContent = " ";
+        rk.appendChild(gap);
+      }
       const wss = document.createElement("span");
       setWrapped(wss, "無嗣", true, bad);
-      rk.appendChild(gap); rk.appendChild(wss);
+      rk.appendChild(wss);
     }
     d.appendChild(rk);
   }
@@ -1839,6 +1848,29 @@ document.addEventListener("click", function () {   /* 点空白解除钉住 */
    横轴 CSS sticky left 照常（main 即横滚容器，横滚深处字随左缘恒可读）。
    判据 r.top<0 严格小于：卷首自然位 slot top 恰 0，页顶不误钉 */
 let fiefHover = null;                 /* 信息条当前关注之人（悬浮或检索定位所写） */
+/* 藩条句号归底（2026-10-24 用户定谳「句号居中」）：文悦 U+3002 字形墨域
+   0.28..0.48em（em 盒居中系该库设计本相，竖排语境无碍），横排行条观之
+   浮中；常体句号墨底坐基线（宋体实测 −0.004em）。setWrapped 将句号归
+   市文 run（文悦子集在册字），故后置遍历文本节点裹 span.jd，css 相对
+   下沉 0.28em 令墨底归线（em 相对，自然/钉两态自适） */
+const wrapFiefDots = function (el) {
+  const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+  for (const tn of nodes) {
+    if (!tn.nodeValue.includes("。")) continue;
+    const frag = document.createDocumentFragment();
+    tn.nodeValue.split("。").forEach(function (part, i) {
+      if (i > 0) {
+        const s = document.createElement("span");
+        s.className = "jd"; s.textContent = "。";
+        frag.appendChild(s);
+      }
+      if (part) frag.appendChild(document.createTextNode(part));
+    });
+    tn.replaceWith(frag);
+  }
+};
 let fiefShown = null;                 /* 已渲之藩（memo：同藩不重渲，支内悬浮频繁） */
 const syncFief = function () {
   if (!fiefBar) return;
@@ -1859,6 +1891,7 @@ const syncFief = function () {
     fiefNameEl.textContent = "";
     setWrapped(fiefTxtEl, f.text, false);
   }
+  wrapFiefDots(fiefNameEl); wrapFiefDots(fiefTxtEl);
 };
 if (fiefBar) {
   for (const n of shown) {
@@ -1955,7 +1988,7 @@ board.style.height = boardH + "px";
    年份检索（2026-10-14 用户定谳）：整串书「(公元前|前)数字年」即入——
      阿拉伯或汉字数字（含单位字按位值、纯数字字逐位拼接，详 yearQuery 注），
      中其年在位者：闭区间 [即位年, 即位年＋在位数]，复辟逐段独立折算、
-     小笺第二行只显所中段起讫（在位一三四五—一四四九）；欠在位数或
+     小笺第二行只显所中段起讫（在位一三四五至一四四九）；欠在位数或
      月/天精度只中即位年当年，无即位年之段不中；结果按段起始年升序，
      同年按级（@throne 键号）、同级按代数。
    深链（2026-10-15 起年深链并收）：#人名 开页即定位加亮（字体就绪后
@@ -1974,29 +2007,29 @@ board.style.height = boardH + "px";
      对照全集，数据添字后重跑即补，表字随 subset-fonts.mjs 自动入子集）；
      表只求自洽（同字同折、两侧一致），不求语言学精确，幹/乾多归一无碍
      匹配。折叠字段 _f* 建索引时一次算成。 */
-/* T2S 表：tools/gen-t2s.mjs 据内收 OpenCC 字表生成（410 对＝数据块用字繁简对照全集∪旧表），勿手改；数据添字后重跑该工具，再 subset-fonts.mjs（表字自动入子集）。 */
+/* T2S 表：tools/gen-t2s.mjs 据内收 OpenCC 字表生成（411 对＝数据块用字繁简对照全集∪旧表），勿手改；数据添字后重跑该工具，再 subset-fonts.mjs（表字自动入子集）。 */
 const T2S_SRC =
   "乾佔來侖倉個倫側傑傳僑儀兒兩別剛劉勝勳勵區厲吳呂啟喚單嚴國圖堅堯塊塏塵壎壽嬪嬰孫寧寫" +
   "寶將尋對層岡峯崗嶽師帶幹庫廢廣廬張彌後復恆愛愨愷慶憖憫憲應懷懸掄揚換撫擊據數於時晉晝" +
-  "暉曆書會東棄棖棗棟棡楊楨極榘榦榮構槤槮樂樅標樞樳樸樺樿檟檢檯檳櫛櫸欄權欒欽歷歸殤沖涇" +
-  "淨減渾湞湯溈準溫滄滎漢漬漵潁潔潙潚潛潤澐澤澱濟濤濱瀝瀾灃為烏烴無煉煒煙煥熲熾燁燉燦爲" +
-  "爾獨獲獻瑪璉璸瓊甌畢畫當發監盧碩碽祐祕祿禎禕禪禮稜稱筆節範簡紀納純紱紹絡統綏綬綱綴綿" +
-  "緒線緡緯縣縮繆繼續羅聖聰肅臘臨與興荊莊華萬葉蒞蔣蕩蕭薊蘄蘇蘭虛號蝨蟣衛袞裏襲見視親覺" +
-  "觀計記訢許詭認誠談諸謀謙謝謹讓豎豐貝貞負貳貴費賈賓賕賢質賴賽趙車軍載輔輝輩輿轉農連進" +
-  "過達遜遼鄉鄒鄖鄧鄭釋釘鈁鈕鈞鈦鈴鈺鉅鉉鉗鉞鉦鉻銑銓銘銪銳鋏鋙鋥鋮錙錚錡錢錫錯鍈鍔鍵鍺" +
-  "鍼鍾鎔鎡鎦鎧鎬鎮鏐鏞鏡鏵鐘鐯鐵鐸鑄鑌鑑鑕鑾鑿長門開閔閻關闢陝陞陰陳陸陽隱雙雞雲靈靜韋" +
-  "韓韜頃順須頎頤題額顏顒類顯餘館饒馬馮駐驕驩驪魯鳳鹹麗黃點黶齊齒龍";
+  "暉曆書會東棄棖棗棟棡楊楨極榘榦榮構槤槮樂樅標樞樳樸樹樺樿檟檢檯檳櫛櫸欄權欒欽歷歸殤沖" +
+  "涇淨減渾湞湯溈準溫滄滎漢漬漵潁潔潙潚潛潤澐澤澱濟濤濱瀝瀾灃為烏烴無煉煒煙煥熲熾燁燉燦" +
+  "爲爾獨獲獻瑪璉璸瓊甌畢畫當發監盧碩碽祐祕祿禎禕禪禮稜稱筆節範簡紀納純紱紹絡統綏綬綱綴" +
+  "綿緒線緡緯縣縮繆繼續羅聖聰肅臘臨與興荊莊華萬葉蒞蔣蕩蕭薊蘄蘇蘭虛號蝨蟣衛袞裏襲見視親" +
+  "覺觀計記訢許詭認誠談諸謀謙謝謹讓豎豐貝貞負貳貴費賈賓賕賢質賴賽趙車軍載輔輝輩輿轉農連" +
+  "進過達遜遼鄉鄒鄖鄧鄭釋釘鈁鈕鈞鈦鈴鈺鉅鉉鉗鉞鉦鉻銑銓銘銪銳鋏鋙鋥鋮錙錚錡錢錫錯鍈鍔鍵" +
+  "鍺鍼鍾鎔鎡鎦鎧鎬鎮鏐鏞鏡鏵鐘鐯鐵鐸鑄鑌鑑鑕鑾鑿長門開閔閻關闢陝陞陰陳陸陽隱雙雞雲靈靜" +
+  "韋韓韜頃順須頎頤題額顏顒類顯餘館饒馬馮駐驕驩驪魯鳳鹹麗黃點黶齊齒龍";
 const T2S_DST =
   "干占来伦仓个伦侧杰传侨仪儿两别刚刘胜勋励区厉吴吕启唤单严国图坚尧块垲尘埙寿嫔婴孙宁写" +
   "宝将寻对层冈峰岗岳师带干库废广庐张弥后复恒爱悫恺庆慭悯宪应怀悬抡扬换抚击据数于时晋昼" +
-  "晖历书会东弃枨枣栋㭎杨桢极矩干荣构梿椮乐枞标枢桪朴桦椫槚检台槟栉榉栏权栾钦历归殇冲泾" +
-  "净减浑浈汤沩准温沧荥汉渍溆颍洁沩㴋潜润沄泽淀济涛滨沥澜沣为乌烃无炼炜烟焕颎炽烨炖灿为" +
-  "尔独获献玛琏瑸琼瓯毕画当发监卢硕䂵佑秘禄祯祎禅礼棱称笔节范简纪纳纯绂绍络统绥绶纲缀绵" +
-  "绪线缗纬县缩缪继续罗圣聪肃腊临与兴荆庄华万叶莅蒋荡萧蓟蕲苏兰虚号虱虮卫衮里袭见视亲觉" +
-  "观计记欣许诡认诚谈诸谋谦谢谨让竖丰贝贞负贰贵费贾宾赇贤质赖赛赵车军载辅辉辈舆转农连进" +
-  "过达逊辽乡邹郧邓郑释钉钫钮钧钛铃钰巨铉钳钺钲铬铣铨铭铕锐铗铻锃铖锱铮锜钱锡错锳锷键锗" +
-  "针钟镕镃镏铠镐镇镠镛镜铧钟䦃铁铎铸镔鉴锧銮凿长门开闵阎关辟陕升阴陈陆阳隐双鸡云灵静韦" +
-  "韩韬顷顺须颀颐题额颜颙类显余馆饶马冯驻骄欢丽鲁凤咸丽黄点黡齐齿龙";
+  "晖历书会东弃枨枣栋㭎杨桢极矩干荣构梿椮乐枞标枢桪朴树桦椫槚检台槟栉榉栏权栾钦历归殇冲" +
+  "泾净减浑浈汤沩准温沧荥汉渍溆颍洁沩㴋潜润沄泽淀济涛滨沥澜沣为乌烃无炼炜烟焕颎炽烨炖灿" +
+  "为尔独获献玛琏瑸琼瓯毕画当发监卢硕䂵佑秘禄祯祎禅礼棱称笔节范简纪纳纯绂绍络统绥绶纲缀" +
+  "绵绪线缗纬县缩缪继续罗圣聪肃腊临与兴荆庄华万叶莅蒋荡萧蓟蕲苏兰虚号虱虮卫衮里袭见视亲" +
+  "觉观计记欣许诡认诚谈诸谋谦谢谨让竖丰贝贞负贰贵费贾宾赇贤质赖赛赵车军载辅辉辈舆转农连" +
+  "进过达逊辽乡邹郧邓郑释钉钫钮钧钛铃钰巨铉钳钺钲铬铣铨铭铕锐铗铻锃铖锱铮锜钱锡错锳锷键" +
+  "锗针钟镕镃镏铠镐镇镠镛镜铧钟䦃铁铎铸镔鉴锧銮凿长门开闵阎关辟陕升阴陈陆阳隐双鸡云灵静" +
+  "韦韩韬顷顺须颀颐题额颜颙类显余馆饶马冯驻骄欢丽鲁凤咸丽黄点黡齐齿龙";
 const T2S = {};
 for (let i = 0; i < T2S_SRC.length; i++) T2S[T2S_SRC[i]] = T2S_DST[i];
 const fold = function (s) {
@@ -2165,7 +2198,7 @@ const renderList = function (keepSel) {
       const endY = (s.n !== null && s.u === "年") ? s.y + s.n : s.y;
       const yl = document.createElement("span");
       yl.className = "yline";
-      emitInkText(yl, "在位" + ystr(s.y) + (endY !== s.y ? "—" + ystr(endY) : ""), false);
+      emitInkText(yl, "在位" + ystr(s.y) + (endY !== s.y ? "至" + ystr(endY) : ""), false);   /* 起讫以「至」接（2026-10-24 用户定谳，旧破折号废） */
       row.appendChild(yl);
     }
     row.addEventListener("click", function () { choose(n); });
