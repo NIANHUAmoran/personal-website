@@ -23,12 +23,12 @@ html { zoom: 0.5; }
    value 等未包裹语境赖此）；woff2 内容变更须同步进 src 之 ?v= 令牌破缓存 */
 @font-face {
   font-family: "文悦古体仿宋2";
-  src: url("../fonts/wenyue-guti-fangsong-2.woff2?v=20261022a") format("woff2");
+  src: url("../fonts/wenyue-guti-fangsong-2.woff2?v=20261023a") format("woff2");
   font-display: swap;
 }
 @font-face {
   font-family: "LXGW WenKai Fallback";
-  src: url("../fonts/LXGWWenKaiMono-Light.woff2?v=20261022a") format("woff2");
+  src: url("../fonts/LXGWWenKaiMono-Light.woff2?v=20261023a") format("woff2");
   font-display: swap;
 }
 
@@ -246,13 +246,32 @@ main { overflow-x: auto; overflow-y: hidden; }
 #fief-bar.pin {
   position: fixed; top: 0; left: 0; right: 0; width: auto;
   z-index: 4;               /* 节点/题识（z1）上、寻人/缩放条（z5）下 */
-  zoom: var(--unzoom);      /* 视观 1:1（水印/寻人件同法；窄屏断点归 1） */
-  height: 36px; line-height: 36px;
-  padding: 0 16px;
-  font-size: var(--han-fs-sm);
-  background: color-mix(in srgb, #fffdf7 97%, var(--han-color-ink-700));   /* 近实纸色：树文不透显 */
-  border-bottom: 1px solid color-mix(in srgb, var(--han-color-ink-800) 24%, transparent);
+  /* 视观 1:1 不挂 zoom（2026-10-23 探针实证：zoom 将 background-attachment:fixed
+     之纸纹放大倍率——条 σ16.5 对 body σ7.2，与世系图纹理失相）；改诸度量显乘
+     --unzoom（窄屏断点归 1，同旧 zoom 语义），元素留 body 同 zoom 阶 → 纸纹
+     相位与世系图全合（逐像素定谳 Δ<6） */
+  height: calc(36px * var(--unzoom)); line-height: calc(36px * var(--unzoom));
+  padding: 0 calc(16px * var(--unzoom));
+  font-size: calc(var(--han-fs-sm) * var(--unzoom));
+  /* 背景与世系图同纸（2026-10-23 用户目验「背景不一致」）：兜底色＋纸纹与 body
+     全同、background-attachment 亦同 fixed——viewport 锁定 → 纹理相位与 body
+     一致，条缘不见接缝（探针像素定谳）；不透明以蔽条下滚过之树文 */
+  background-color: #dfd4bc;
+  background-image: url("../textures/aged-paper.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-attachment: fixed;
+  border-bottom: calc(1px * var(--unzoom)) solid color-mix(in srgb, var(--han-color-ink-800) 24%, transparent);
 }
+/* 行条横排回落/墨图/组字盒行内中和（2026-10-23 用户目验「矮一块」）：竖排棋盘
+   盒规（inline-block 1em 定方、middle 块轴取中、line-height 1）在横排 32px 行盒
+   令 .fbc 墨底沉 1.0 视px、钉态沉 2.0（亮度剖面探针实测）——行条纯横排，悉数归
+   常行内流、坐基线与主库字等高（小笺 #seek-list 同法先例）；.ink/.ids 光学下沉
+   承小笺审计定值 -0.25em（em 相对，自然 12px/钉 14px 两态自适）。竖排各栏 .ch 系
+   不受染（calibrateFallback 只的 .ch） */
+#fief-bar .fbc { display: inline; width: auto; vertical-align: baseline; line-height: inherit; position: static; }
+#fief-bar .ink, #fief-bar .ids { vertical-align: -0.25em; }
 
 /* ====== 版框：粗墨单线大框（仿宋刻本版框），左让书口 ======
    墨洇：主线以 feTurbulence 位移出不规则内外溢边；

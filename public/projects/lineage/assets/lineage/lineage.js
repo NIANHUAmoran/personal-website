@@ -377,6 +377,16 @@ const IDS_RECTS = {
   "⿻": [[0, 0, 100, 100], [0, 0, 100, 100]]
 };
 const IDS_K = 1.06;   /* 部件充盈系数：CJK 墨迹约占 em 八成半，微放大贴格（探针校准） */
+/* 逐字调缝格表（2026-10-23 用户目验「𣫑 部分太窄」立）：整序列→逐件格，先于通表命中。
+   通表 ⿰ 等分格与此字墨模型相冲：主件氵（LXGW 墨 34.5 份 em，隔离探针实测）等分压
+   仅 17.6 份，客件 𣫑 墨图（墨占格 93.75%）等分拉伸仅 46.9 份——为其自然宽之半，两件
+   间更余 18.9 份死缝，客窄主宽。逐字反解：氵墨 18 份（保用户已受之等分观感，sx≈0.52
+   不动）、客墨 64 份（自然宽 68%，同字体组字之压缩档）、缝 6 份、整墨 [6,94] 取中；
+   氵 em 盒（墨外无画）与客格交叠系结构无害。数值勿跨符照抄——新符另测（隔离法见
+   check-ids probeA） */
+const IDS_RECTS_SEQ = {
+  "⿰氵𣫑": [[-8.69, 0, 49.2, 100], [27.86, 0, 68.27, 100]]
+};
 
 /* 解析文本为单元列：{ch,seq}＝普通字（旧路径原样）、{op,kids,seq}＝IDS 组字。
    坏序列（描述符后组件不足）告警后按普通字降级（走 .fbc 回落，可见不隐身） */
@@ -427,7 +437,7 @@ const xmlEsc = function (s) {
    currentColor 随栏色，朱书栏自然朱）；嵌套 IDS 发嵌套 <svg>（默认 meet
    保方形内芯不变形） */
 function idsMarkup(u, bold) {
-  const rects = IDS_RECTS[u.op];
+  const rects = IDS_RECTS_SEQ[u.seq] || IDS_RECTS[u.op];
   let out = "";
   u.kids.forEach(function (kid, ix) {
     const r = rects[ix];
