@@ -23,12 +23,12 @@ html { zoom: 0.5; }
    value 等未包裹语境赖此）；woff2 内容变更须同步进 src 之 ?v= 令牌破缓存 */
 @font-face {
   font-family: "文悦古体仿宋2";
-  src: url("../fonts/wenyue-guti-fangsong-2.woff2?v=20261029a") format("woff2");
+  src: url("../fonts/wenyue-guti-fangsong-2.woff2?v=20261101a") format("woff2");
   font-display: swap;
 }
 @font-face {
   font-family: "LXGW WenKai Fallback";
-  src: url("../fonts/LXGWWenKaiMono-Light.woff2?v=20261029a") format("woff2");
+  src: url("../fonts/LXGWWenKaiMono-Light.woff2?v=20261101a") format("woff2");
   font-display: swap;
 }
 
@@ -271,7 +271,16 @@ main { overflow-x: auto; overflow-y: hidden; }
    承小笺审计定值 -0.25em（em 相对，自然 12px/钉 14px 两态自适）。竖排各栏 .ch 系
    不受染（calibrateFallback 只的 .ch） */
 #fief-bar .fbc { display: inline; width: auto; vertical-align: baseline; line-height: inherit; position: static; }
-#fief-bar .ink, #fief-bar .ids { vertical-align: -0.25em; }
+/* 墨图/组字盒行高归一（2026-10-30 用户目验「𣚅 字高一些」）：.ink/.ids 系
+   inline-block，基线＝盒内透明真文本之行盒基线——行条 line-height 32px（钉态
+   72px）尽数入盒，内文基线被推出 1em 盒底之外，盒遂悬高邻字（像素审计：
+   自然态高 3.5 视px、钉态高 7.5 视px）；小笺 -0.25em 审计值系 body 1.5 行高
+   （18px）语境所定，承来此处即失准。line-height:1 令内文基线归盒内、两态
+   几何自洽（em 相对）；光学落点另审（dsf2 屏摄逐字墨迹 bbox，va 扫描
+   0/±0.04..0.08em：墨心对邻字均值 Δ，两态平台期 [+0.04,+0.08]em 内像素桶
+   稳定，取实测中值 +0.05em——自然态 Δ心 +0.25 视px、钉态 Δ心 −0.68/−0.18，
+   俱亚像素级） */
+#fief-bar .ink, #fief-bar .ids { line-height: 1; vertical-align: +0.05em; }
 /* 藩条句号归底（2026-10-24 用户定谳「句号居中」）：文悦 U+3002 墨域
    0.28..0.48em 居中系该库字形本相（竖排无碍），横条浮中；宋体句号墨底
    −0.004em 坐基线为常体参照——引擎 wrapFiefDots 裹 span.jd，相对下沉
