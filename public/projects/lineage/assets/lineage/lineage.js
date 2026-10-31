@@ -101,7 +101,9 @@
  *             版框内树上之一行（卷首行）常驻单行、左端对齐——悬浮/钉住/
  *             检索定位到该藩之人即显显示串，无藩信息则空行（行高恒占零跳动）。
  *             藩属＝锚（首封藩王）支头＋其下全体男系后裔（含郡王子支与
- *             名单外宗室），嵌套锚最近支头优先；显示串照显径用不解析语义、
+ *             名单外宗室），嵌套锚最近支头优先；标记至一级帝系名单（@throne）
+ *             成员则止于其身不下传——藩入帝统藩身份终（2026-11-01 用户定谳，
+ *             興藩→世宗例；后代之自有新藩锚深另行起头照显）；显示串照显径用不解析语义、
  *             内禁竖线，以藩名开头则藩名析出墨重首段；锚匹配同 @alias 规；
  *             藩名重复前行生效。粘顶 JS 兜底（纵滚在 body、main 仅横滚，
  *             sticky 纵轴被吞——引擎监听滚动切 fixed 钉顶、视观 1:1 寻人件
@@ -930,7 +932,12 @@ if (meta.genFirst) {
    版框内树上之一行（卷首行）常驻单行左对齐——悬浮/钉住/检索定位到该藩
    之人即显显示串，无信息则空行（行高恒占、切换零跳动）。藩属＝锚（首封
    藩王）支头＋其下全体男系后裔（含郡王子支与名单外宗室），嵌套锚最近
-   支头优先（head.depth 深者胜，与书写序无关）；显示串照显径用不解析语义
+   支头优先（head.depth 深者胜，与书写序无关）；标记至一级帝系名单
+   （@throne，throneSet 之 level 1 者）成员则止于其身、不下传其裔——藩入
+   帝统藩身份终（2026-11-01 用户定谳：興藩→世宗例，朱厚熜 照显、其裔
+   31 人不再显興藩；朱由榔∈南明、其裔 7 人同断桂藩；后代之自有新藩系
+   深锚自另起头标记，瑞藩等照常）——故标记路径后移至帝系名单集建成后
+   统一执行；显示串照显径用不解析语义
    （以藩名开头则藩名析出墨重首段——按藩名字段切割，仍非解析文串），
    内禁竖线（字段数 3–4 由此有定，逾则告警跳过）；锚匹配同 @alias 规
    （带称号按 name+ti 全串、裸名须全树唯一、IDS 削符并认），歧义/无人
@@ -963,13 +970,10 @@ if ((meta.fiefs || []).length) {
     if (seenHead.has(head)) { console.warn("[lineage] @fief 同支头已属「" + seenHead.get(head) + "」，后行已跳过：", name); return; }
     seenFief.set(name, fiefs.length);
     seenHead.set(head, name);
-    const fief = { name: name, head: head, text: text };
-    fiefs.push(fief);
-    (function mark(nd) {   /* 整支归藩；嵌套锚最近支头优先（深 head 覆浅层，序无关） */
-      const prev = fiefOf.get(nd);
-      if (!prev || prev.head.depth < head.depth) fiefOf.set(nd, fief);
-      nd.children.forEach(mark);
-    })(head);
+    fiefs.push({ name: name, head: head, text: text });
+    /* 藩属标记后移至一级帝系名单集（impCut）建成后统一执行——入帝统断传
+       须问名单（2026-11-01 定谳），fiefOf 唯运行期 syncFief/检索定位读账，
+       后移零扰（见标记处注） */
   });
 }
 if (fiefs.length) {
@@ -1124,6 +1128,29 @@ for (const g of groups) if (g.level > LVL_MAX) LVL_MAX = g.level;
 for (const n of nodes) n._lvl = LVL_MAX + 1;
 for (const g of groups) g.resolved.forEach(function (n) {
   if (n && g.level < n._lvl) n._lvl = g.level;
+});
+
+/* 藩属标记（自 @fief 解析处后移至此，2026-11-01 用户定谳「入帝统断传」：
+   须待名单解析完成）：整支归藩，嵌套锚最近支头优先（深 head 覆浅层，与
+   书写序无关）；标记至一级帝系名单成员（impCut）则本人照常打标、止步不
+   下传其裔——藩入帝统藩身份终（興藩→世宗例：朱厚熜 照显、其裔 31 人
+   不再显；朱由榔∈南明、其裔 7 人同断桂藩）；深锚藩之标记起点在断点之
+   下，天然不受累——后代之自有新藩照显（瑞藩等照常，例外条款自洽） */
+const impCut = new Set();   /* 一级非藩名单成员——断传判据严格限定 @throne 1级
+   （2026-11-01 定谳「在 @throne 中的人员 A」）；不借 throneSet 整集，防来日
+   二三级非藩名单误断 */
+groups.forEach(function (g) {
+  if (g.prince || g.level !== 1) return;
+  g.resolved.forEach(function (n) { if (n) impCut.add(n); });
+});
+fiefs.forEach(function (fief) {
+  const head = fief.head;
+  (function mark(nd) {
+    const prev = fiefOf.get(nd);
+    if (!prev || prev.head.depth < head.depth) fiefOf.set(nd, fief);
+    if (impCut.has(nd)) return;   /* 入帝统断传：止于其身（本人已打标） */
+    nd.children.forEach(mark);
+  })(head);
 });
 
 /* 悬浮传位层：overlay 边＝名单顺接相邻对（@focus-skip 之前缀名单除外）
