@@ -1215,6 +1215,23 @@ groups.forEach(function (g) {
     else { seen.add(k); i++; }
   }
 })();
+/* 乙案收紧触发（2026-11-02 用户定谳）：每边收集「共享名单居间成员」——
+   含两端点的任一名单上位次严格居二者之间的已解析成员。如南明帝系边
+   朱聿鍵→朱聿鐭 越过唐藩名单居间的朱聿鏼（直线穿其名格方触发改绕）；
+   无关旁支之格（魯藩寧德朱壽鋮 夹壽鋐/壽鏞、清壳载字辈夹載淳/載湉）
+   不居任何共享名单之间，直线穿淡照口径 B 容忍、维持直连。复辟重入列者
+   （朱祁鎮 两现）之接续边系父子 R1 梳路，乙案闸仅挂 R2，天然无涉；
+   复辟对边（祁鎮⇄祁鈺）首现序相邻、居间恒空，两安 */
+focusEdges.forEach(function (e) {
+  const mids = [];
+  groups.forEach(function (g) {
+    const ia = g.resolved.indexOf(e[0]), ib = g.resolved.indexOf(e[1]);
+    if (ia < 0 || ib < 0) return;
+    for (let j = Math.min(ia, ib) + 1; j < Math.max(ia, ib); j++)
+      if (g.resolved[j] && mids.indexOf(g.resolved[j]) < 0) mids.push(g.resolved[j]);
+  });
+  e.mids = mids;
+});
 const focusInc = new Map();   /* 节点 → 以其为端点的 overlay 边 */
 focusEdges.forEach(function (e) {
   for (const n of e) { if (!focusInc.has(n)) focusInc.set(n, []); focusInc.get(n).push(e); }
@@ -1557,9 +1574,10 @@ for (const n of shown) {
       不划穿自身诸栏），横跨淡影无妨；邻格侧口行程容不下箭镞时改梳形
       顶/底入（源顶/底出名柱→廊道横穿→目标顶/底入，R1 同形）；
       来回对双道按行高四分位均布（顺接走上四分位、回返走下四分位），
-      单向一道居名字中线高；当选仍穿名者另备表尾「侧出→上辈廊→顶入」式
-      （乙案，2026-11-02 用户定谳：侧出即拐向上、复用既有上辈廊横越、
-      垂降目标顶端口入，绕开同辈夹名之格；改选闸见 R7 注）；
+      单向一道居名字中线高；当选穿硬障或共享名单居间成员格者另备表尾
+      「侧出→上辈廊→顶入」式（乙案，2026-11-02 用户定谳：侧出即拐向上、
+      复用既有上辈廊横越、垂降目标顶端口入，绕开同辈夹名之格；穿无关
+      淡者不触发、照口径 B 直连容忍；改选闸见 R7 注）；
    R3 跨辈非父子：继任在下＝单肘 L（源侧端口出→水平→目标顶端口入）；
       继任在上＝双肘（源侧端口出→水平→垂直→目标侧端口入）；
       两向另备侧出早升/早降侧入（侧出即于源格外短距处直升/直降，至
@@ -1588,7 +1606,8 @@ for (const n of shown) {
       侧出者附侧翼竖段两档（字格外 12px / 格外一格宽）；同辈边表尾另附
       「侧出→上辈廊→顶入」两档（乙案 2026-11-02：复用既有上辈廊 railUp，
       与 R3a/R2 顶出式同廊高，叠行风险系用户知情定谳、clean 校验兜底；
-      改选闸在 routeOne——仅当选穿名/无解回退且本廊式全净零穿名方改选，
+      改选闸在 routeOne——仅当选穿硬障/共享名单居间成员格（被越过的同链
+      继任者）或无解回退，且本廊式全净零穿名方改选；穿无关淡者不触发，
       当选零穿名者一概不扰）。
       候补逐段校验（穿障字格、与已画线相交或共线叠行均出局；唯同父兄弟
       继任梳路之共轴出口段天生共干，叠不算重描——共干豁免，2026-10-14
@@ -1745,8 +1764,9 @@ const routeCandidates = function (e, runs) {
        底缘下 24px 不骑字格；末降 18px ≥ MIN_RUN 容箭镞），垂降目标顶端口入，
        绕开同辈夹名之格。叠行风险系用户知情定谳（廊道数不增）：与同廊他式横担
        之叠行判（Δ≤2 交叠即拒）由 clean 校验兜底，拒则本式不触发。
-       触发＝前诸式皆不适用或当选者仍穿名（routeOne 乙案改选，表尾追加不扰
-       既有当选——甲案同法先例） */
+       触发＝前诸式皆不适用或当选者穿硬障/共享名单居间成员格（routeOne
+       乙案改选闸，收紧定谳同日：穿无关淡者不触发；表尾追加不扰既有当选
+       ——甲案同法先例） */
     if (railUp !== null) {
       cands.ownFrom = cands.length;
       FLANKS.forEach(function (off) {
@@ -1805,7 +1825,7 @@ const routeCandidates = function (e, runs) {
 };
 /* R7 选录：候补逐段校验取首个洁净者——正选须末段行程 ≥ MIN_RUN，
    次选洁净而末段短者兜底，全败回退标准路由并告警 */
-const routeOne = function (e, runs, taken, obs, dimObs) {
+const routeOne = function (e, runs, taken, obs, dimObs, midObs) {
   const cands = routeCandidates(e, runs);
   const ownFrom = cands.ownFrom === undefined ? Infinity : cands.ownFrom;   /* 乙案上辈廊式段起点（表尾） */
   let pick = null, pickTurns = Infinity, pickDim = Infinity;   /* 正选：洁净且末段行程 ≥ MIN_RUN */
@@ -1838,15 +1858,14 @@ const routeOne = function (e, runs, taken, obs, dimObs) {
     console.warn("[lineage] R7 绕行无解，回退标准路由：", e[0].name + "→" + e[1].name);
     pick = { d: cands[0], segs: routeSegs(cands[0]) };
   }
-  /* 乙案改选（2026-11-02 用户定谳）：当选者仍穿名（硬障或淡者）或系无解
-     回退，而上辈廊式有全净候补 → 改选之——「前诸式不适用或穿名方触发」，
-     当选零穿名者一概不扰（表尾追加＋此闸双保险，甲案最小扰动同旨） */
+  /* 乙案改选（2026-11-02 用户定谳，同日收紧触发）：当选者穿硬障或「共享
+     名单居间成员」之格（被越过的同链继任者，midObs）或系无解回退，而上辈
+     廊式有全净候补 → 改选之；穿无关淡者不触发（口径 B 淡穿容忍、少折优先，
+     朱壽鋐→朱壽鏞 穿朱壽鋮 復直连例）。当选零穿名者一概不扰（表尾追加＋
+     此闸双保险，甲案最小扰动同旨） */
   if (own) {
-    const dn = dimObs.reduce(function (c, r) {
-      return c + (pick.segs.some(function (s) { return segHits(s, r); }) ? 1 : 0);
-    }, 0);
-    const hard = pick.segs.some(function (s) { return obs.some(function (r) { return segHits(s, r); }); });
-    if (dn > 0 || hard) pick = own;
+    const hit = function (rs) { return pick.segs.some(function (s) { return rs.some(function (r) { return segHits(s, r); }); }); };
+    if (hit(obs) || hit(midObs)) pick = own;
   }
   return pick;
 };
@@ -1881,7 +1900,9 @@ const routeOne = function (e, runs, taken, obs, dimObs) {
         taken.push(s);
       });
     });
-    const pick = routeOne(e, runs, taken, obs, dimObs);
+    /* 乙案收紧触发：居间成员格视同硬障（穿之方改绕），无关淡者穿直容忍 */
+    const midObs = (e.mids || []).map(function (m) { return obsRect(m); });
+    const pick = routeOne(e, runs, taken, obs, dimObs, midObs);
     routed.push({ e: e, segs: pick.segs });
     e.d = pick.d;
   });
