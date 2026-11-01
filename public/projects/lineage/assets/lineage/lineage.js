@@ -1557,9 +1557,9 @@ for (const n of shown) {
       不划穿自身诸栏），横跨淡影无妨；邻格侧口行程容不下箭镞时改梳形
       顶/底入（源顶/底出名柱→廊道横穿→目标顶/底入，R1 同形）；
       来回对双道按行高四分位均布（顺接走上四分位、回返走下四分位），
-      单向一道居名字中线高；当选仍穿名者另备表尾「侧出→本廊→顶入」式
-      （乙案，2026-11-02 用户定谳：侧出即拐向上、本辈框顶上方专用廊
-      横越、垂降目标顶端口入，绕开同辈夹名之格；改选闸见 R7 注）；
+      单向一道居名字中线高；当选仍穿名者另备表尾「侧出→上辈廊→顶入」式
+      （乙案，2026-11-02 用户定谳：侧出即拐向上、复用既有上辈廊横越、
+      垂降目标顶端口入，绕开同辈夹名之格；改选闸见 R7 注）；
    R3 跨辈非父子：继任在下＝单肘 L（源侧端口出→水平→目标顶端口入）；
       继任在上＝双肘（源侧端口出→水平→垂直→目标侧端口入）；
       两向另备侧出早升/早降侧入（侧出即于源格外短距处直升/直降，至
@@ -1586,9 +1586,10 @@ for (const n of shown) {
       （R3a 底出与 R1 同形之梳路；R2 邻格梳形顶/底入；R3b 顶出→目标行
       上廊→顶入；R3 侧出早升/早降→至目标行中线高横穿侧入）；
       侧出者附侧翼竖段两档（字格外 12px / 格外一格宽）；同辈边表尾另附
-      「侧出→本廊→顶入」两档（乙案 2026-11-02：本廊＝railUp 上 12px 之
-      本辈框顶专用廊；改选闸在 routeOne——仅当选穿名/无解回退且本廊式
-      全净零穿名方改选，当选零穿名者一概不扰）。
+      「侧出→上辈廊→顶入」两档（乙案 2026-11-02：复用既有上辈廊 railUp，
+      与 R3a/R2 顶出式同廊高，叠行风险系用户知情定谳、clean 校验兜底；
+      改选闸在 routeOne——仅当选穿名/无解回退且本廊式全净零穿名方改选，
+      当选零穿名者一概不扰）。
       候补逐段校验（穿障字格、与已画线相交或共线叠行均出局；唯同父兄弟
       继任梳路之共轴出口段天生共干，叠不算重描——共干豁免，2026-10-14
       用户定谳），洁净者中
@@ -1738,17 +1739,18 @@ const routeCandidates = function (e, runs) {
         cands.push("M" + out + " " + yA + " H" + (out + sgn * off) + " V" + ry + " H" + x2 + tail);
       });
     });
-    /* 侧出→本廊→顶入（候补表尾追加，2026-11-02 用户定谳乙案，朱聿鍵→朱聿鐭
-       穿朱聿鏼 例）：侧出即拐向上，本辈框顶上方专用廊横越，垂降目标顶端口入，
-       绕开同辈夹名之格。本廊＝railUp 上 12px（GAP_Y 52 制：末降 30px ≥ MIN_RUN
-       容箭镞、与上辈廊横担错开叠行判 Δ>2、居父格底缘下 12px 不骑上辈字格）；
+    /* 侧出→上辈廊→顶入（候补表尾追加，2026-11-02 用户定谳乙案，朱聿鍵→朱聿鐭
+       穿朱聿鏼 例；廊高定谳更正同日：复用既有上辈廊，专用廊 railUp−12 案作废）：
+       侧出即拐向上，横跑与 R3a/R2 顶出式同廊（railUp，GAP_Y 52 带中线，居父格
+       底缘下 24px 不骑字格；末降 18px ≥ MIN_RUN 容箭镞），垂降目标顶端口入，
+       绕开同辈夹名之格。叠行风险系用户知情定谳（廊道数不增）：与同廊他式横担
+       之叠行判（Δ≤2 交叠即拒）由 clean 校验兜底，拒则本式不触发。
        触发＝前诸式皆不适用或当选者仍穿名（routeOne 乙案改选，表尾追加不扰
        既有当选——甲案同法先例） */
     if (railUp !== null) {
-      const railOwn = railUp - 12;
       cands.ownFrom = cands.length;
       FLANKS.forEach(function (off) {
-        cands.push("M" + out + " " + yA + " H" + (out + sgn * off) + " V" + railOwn + topIn);
+        cands.push("M" + out + " " + yA + " H" + (out + sgn * off) + " V" + railUp + topIn);
       });
     }
   } else if (b.depth > a.depth) {               /* R3a 继任在下 */
@@ -1805,10 +1807,10 @@ const routeCandidates = function (e, runs) {
    次选洁净而末段短者兜底，全败回退标准路由并告警 */
 const routeOne = function (e, runs, taken, obs, dimObs) {
   const cands = routeCandidates(e, runs);
-  const ownFrom = cands.ownFrom === undefined ? Infinity : cands.ownFrom;   /* 乙案本廊式段起点（表尾） */
+  const ownFrom = cands.ownFrom === undefined ? Infinity : cands.ownFrom;   /* 乙案上辈廊式段起点（表尾） */
   let pick = null, pickTurns = Infinity, pickDim = Infinity;   /* 正选：洁净且末段行程 ≥ MIN_RUN */
   let soft = null, softTurns = Infinity, softDim = Infinity;   /* 次选：洁净但末段短（聊胜穿格/无解） */
-  let own = null, ownTurns = Infinity;                         /* 乙案：本廊式段中全净（零穿名）少折者 */
+  let own = null, ownTurns = Infinity;                         /* 乙案：上辈廊式段中全净（零穿名）少折者 */
   for (let i = 0; i < cands.length; i++) {
     const segs = routeSegs(cands[i]);
     const turns = segs.length - 1;            /* 转折数＝段数减一 */
@@ -1837,7 +1839,7 @@ const routeOne = function (e, runs, taken, obs, dimObs) {
     pick = { d: cands[0], segs: routeSegs(cands[0]) };
   }
   /* 乙案改选（2026-11-02 用户定谳）：当选者仍穿名（硬障或淡者）或系无解
-     回退，而本廊式有全净候补 → 改选之——「前诸式不适用或穿名方触发」，
+     回退，而上辈廊式有全净候补 → 改选之——「前诸式不适用或穿名方触发」，
      当选零穿名者一概不扰（表尾追加＋此闸双保险，甲案最小扰动同旨） */
   if (own) {
     const dn = dimObs.reduce(function (c, r) {
