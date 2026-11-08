@@ -5,7 +5,77 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>大明帝系</title>
 <!-- 世系图视觉模块：纸纹背景、版框书口、墨洇、节点栏样式与几何令牌 -->
-<link rel="stylesheet" href="assets/lineage/lineage.css?v=20261108a">
+<link rel="stylesheet" href="assets/lineage/lineage.css?v=20261108b">
+<!-- ══ 明壳专属：《皇明祖訓》字輩譜（2026-11-08 用户定谳：印章钮＋浮层面板）══
+     印章钮在板内纸上：题识文字底缘之下、方印之上、与印同轴（壳尾脚本定位，
+     布局 px 与方印 100px 同单位——桌面随根 zoom 视观减半，正与题识/印同缩）；
+     面板＝fixed 浮层，zoom:var(--unzoom) 抵根缩放、视观恒 1:1（水印/寻人件同法）。
+     罩点击、Esc、印章钮再点皆收。谱文为静态壳文案（不入数据块），用字由
+     subset-fonts 之 body.textContent 全采入子集，采集面无需另扩 -->
+<style>
+  #zuxun-seal {
+    position: absolute; z-index: 2;   /* 顶/左由壳尾脚本量题识底缘后写行内 */
+    visibility: hidden;               /* 引擎异步引导：方印挂板定位后壳尾脚本方显，防题识空时瞬跳 */
+    width: 60px; height: 124px; box-sizing: border-box;   /* 長方印：四字单列 */
+    display: flex; align-items: center; justify-content: center;
+    writing-mode: vertical-rl; text-orientation: upright;
+    font-family: inherit; font-size: 26px; font-weight: 700;
+    letter-spacing: .1em; line-height: 1;
+    color: var(--han-color-vermilion-700);
+    background: color-mix(in srgb, #fffdf7 88%, transparent);
+    border: 3px solid var(--han-color-vermilion-700);
+    border-radius: 6px; cursor: pointer;
+  }
+  #zuxun-seal:hover { background: color-mix(in srgb, var(--han-color-vermilion-700) 10%, #fffdf7); }
+  #zuxun-seal:focus-visible { outline: 3px solid var(--han-color-vermilion-700); outline-offset: 3px; }
+
+  #zuxun-panel {
+    position: fixed; inset: 0; z-index: 6;
+    zoom: var(--unzoom);              /* 抵根 50% 缩放：视观 1:1（窄屏断点归 1） */
+    display: flex; align-items: center; justify-content: center;
+    background: color-mix(in srgb, var(--han-color-ink-800) 22%, transparent);
+  }
+  #zuxun-panel[hidden] { display: none; }
+  .zux-frame {
+    display: flex;                    /* 右＝收钮栏、左＝卷轴主体 */
+    width: min(920px, calc(100vw - 40px));
+    height: min(560px, calc(100vh - 40px));
+    background: #f6eeda url("assets/textures/aged-paper.png") center / cover no-repeat;
+    border: 1px solid color-mix(in srgb, var(--han-color-ink-800) 55%, transparent);
+    box-shadow: 0 2px 10px rgba(26, 25, 22, .28);
+  }
+  .zux-scroll {
+    flex: 1 1 auto; min-width: 0;
+    writing-mode: vertical-rl;        /* 竖排右起：题首栏居右，诸藩次第向左 */
+    overflow-x: auto; overflow-y: hidden;
+    padding: 20px 22px;
+    font-size: 16px; line-height: 1.4;
+    color: var(--han-color-ink-700);
+    scrollbar-width: thin;
+  }
+  .zux-title { margin: 0 0 0 20px; font-weight: 700; color: var(--han-color-ink-800); }
+  .zux-title .t1 { display: block; font-size: 22px; letter-spacing: .08em; }
+  .zux-title .t2 { display: block; font-size: 15px; letter-spacing: .16em; margin-right: 8px; }
+  .zux-sec { margin-left: 18px; }
+  .zux-sec h3 {
+    margin: 0; margin-left: 8px;      /* 竖排块轴：h3 左缘之距＝与谱文栏之隔 */
+    font-size: 15px; letter-spacing: .12em;
+    color: var(--han-color-vermilion-700);
+  }
+  .zux-sec p { margin: 0; letter-spacing: .1em; }
+  .zux-close {
+    flex: 0 0 auto; align-self: flex-start;
+    width: 30px; height: 30px; margin: 10px 10px 0 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: inherit; font-size: 16px; line-height: 1;
+    color: var(--han-color-ink-800);
+    background: color-mix(in srgb, #fffdf7 70%, transparent);
+    border: 1px solid color-mix(in srgb, var(--han-color-ink-800) 40%, transparent);
+    border-radius: 4px; cursor: pointer;
+  }
+  .zux-close:hover { color: var(--han-color-vermilion-700); border-color: var(--han-color-vermilion-700); }
+  .zux-close:focus-visible { outline: 2px solid var(--han-color-vermilion-700); outline-offset: 2px; }
+</style>
 </head>
 <body>
 
@@ -269,7 +339,7 @@
 @throne2=永藩[受封,襲封]:朱慈炤|永悼王
 @throne2=魯藩[受封,襲封]:朱檀|魯荒王,朱肇煇|魯靖王,朱泰堪|魯惠王,朱陽鑄|魯莊王,朱觀𤊟|魯端王,朱頤坦|魯恭王 寶慶王,朱壽鏳|魯敬王 富平王,朱壽鋐|魯憲王 常德王,朱壽鏞|魯肅王 泰興王,朱以派|魯安王 魯孝王,朱以海|魯王 監國
 @throne2=唐藩[受封,襲封]:朱桱|唐定王,朱瓊烴|唐靖王,朱瓊炟|唐憲王,朱芝址|唐莊王 舞陽王,朱彌鍗|唐成王 潁昌王,朱宇溫|唐敬王 文城王,朱宙栐|唐順王 明順帝,朱碩熿|唐端王 明端帝,朱聿鍵|明紹宗 唐王 南陽王,朱聿鏼|唐愍王,朱聿鐭|明文宗 唐王,朱聿鍔|唐王
-@throne2=鄧藩[受封,襲封]:朱器䵺|鄧王 德安王
+@throne2=鄧藩[受封,襲封]:朱噐䵺|鄧王 德安王
 @throne3=吳藩廣澤[受封,襲封]:朱允熥|吳哀王 廣澤王
 @throne3=衡藩懷恩[受封,襲封]:朱允熞|衡悼王 衡愍王 懷恩王
 @throne3=徐藩敷惠[受封,襲封]:朱允熙|徐哀王 敷惠王 甌寧王
@@ -524,20 +594,20 @@
 @throne3=唐藩舞陽[受封,襲封]:朱芝址|唐莊王 舞陽王
 @throne3=唐藩三城[受封,襲封]:朱芝垝|三城康穆王
 @throne3=唐藩新城[受封,襲封]:朱芝坦|新城悼簡王
-@throne3=唐藩承休[受封,襲封]:朱芝埌|承休榮和王,朱彌鋠|承休昭毅王,朱宇淵|承休安僖王,朱碩鰾|承休王
+@throne3=唐藩承休[受封,襲封]:朱芝埌|承休榮和王,朱彌鋠|承休昭毅王,朱宇淵|承休安僖王,朱碩熛|承休王
 @throne3=唐藩蕩陰[受封,襲封]:朱芝𤬪|蕩陰昭安王,朱彌鍔|蕩陰端肅王,朱宙棨|蕩陰榮簡王
 @throne3=唐藩潁昌[受封,襲封]:朱彌鍗|唐成王 潁昌王
 @throne3=唐藩淅陽[受封,襲封]:朱彌鎈|淅陽溫僖王
 @throne3=唐藩文城[受封,襲封]:朱彌鉗|文城王 唐恭王,朱宇溫|唐敬王 文城王
 @throne3=唐藩郾城[受封,襲封]:朱彌鈱|郾城恭端王,朱宙桃|郾城榮康王
 @throne3=唐藩衛輝[受封,襲封]:朱彌鋿|衛輝恭懿王,朱宇漳|衛輝端順王,朱碩煥|衛輝溫僖王
-@throne3=唐藩福山[受封,襲封]:朱器塽|福山王
-@throne3=唐藩清源[受封,襲封]:朱器埏|清源王
-@throne3=唐藩安陽[受封,襲封]:朱器埈|安陽王
-@throne3=唐藩寶慶[受封,襲封]:朱器增|寶慶王
-@throne3=唐藩永興[受封,襲封]:朱器培|永興王,朱某|永興王
-@throne3=唐藩永壽[受封,襲封]:朱器圻|永壽王
-@throne3=唐藩德安[受封,襲封]:朱器䵺|鄧王 德安王
+@throne3=唐藩福山[受封,襲封]:朱噐塽|福山王
+@throne3=唐藩清源[受封,襲封]:朱噐埏|清源王
+@throne3=唐藩安陽[受封,襲封]:朱噐埈|安陽王
+@throne3=唐藩寶慶[受封,襲封]:朱噐增|寶慶王
+@throne3=唐藩永興[受封,襲封]:朱噐培|永興王,朱某|永興王
+@throne3=唐藩永壽[受封,襲封]:朱噐圻|永壽王
+@throne3=唐藩德安[受封,襲封]:朱噐䵺|鄧王 德安王
 @throne3=唐藩南陽[受封,襲封]:朱聿鍵|明紹宗 唐王 南陽王
 @prince-prefix=明朝
 @alias=朱見濡|明憲宗 沂王>朱見深
@@ -582,6 +652,18 @@
 @alias=朱彌鎈|淅陽溫僖王>朱彌鏟
 @alias=朱秉𣕃|宜川思裕王>朱秉楀
 @alias=朱秉楱|汧陽莊靖王>朱秉榛
+@alias=朱噐墫|新野世孫>朱器墫
+@alias=朱噐𧯼|新野奉祀>朱器𧯼
+@alias=朱噐垌|輔國將軍>朱器垌
+@alias=朱噐墭|唐裕王 明宣帝>朱器墭
+@alias=朱噐塽|福山王>朱器塽
+@alias=朱噐埏|清源王>朱器埏
+@alias=朱噐埈|安陽王>朱器埈
+@alias=朱噐增|寶慶王>朱器增
+@alias=朱噐培|永興王>朱器培
+@alias=朱噐圻|永壽王>朱器圻
+@alias=朱噐䵺|鄧王 德安王>朱器䵺
+@alias=朱碩熛|承休王>朱硕鳔
 @gen-first=朱元璋|明太祖
 @watermark-art=assets/textures/wm-ming-dragon.png
 @seal=assets/textures/seal-common.png
@@ -1628,7 +1710,7 @@
 						朱楩|岷莊王|母妃周氏
 						朱橞|谷王|母惠妃郭氏
 						朱松|韓憲王|母妃周氏
-						朱模|沈簡王|母貴妃趙氏
+						朱模|瀋簡王|母貴妃趙氏
 						朱楹|安惠王
 						朱桱|唐定王|母賢妃李氏|1391|24
 							朱瓊煙
@@ -1640,11 +1722,11 @@
 										朱宇滬|新野榮僖王|母王妃曲氏|1499|54
 											朱宙𣑁|新野康靖王|母王妃劉氏|1556|16
 												朱碩燁|新野世子|母王妃趙氏
-													朱器墫|新野世孫|無嗣
-													朱器𧯼|新野奉祀
+													朱噐墫|新野世孫|無嗣
+													朱噐𧯼|新野奉祀
 												朱碩爚|鎮國將軍
 												朱碩燦|新野莊憲王||1578|序齒7
-													朱器垌|輔國將軍
+													朱噐垌|輔國將軍
 							朱瓊炟|唐憲王|母王妃吳氏|1428|47
 								朱芝壐|唐悼簡世子|母王妃宋氏|無嗣
 								朱芝址|唐莊王 舞陽王|母王妃宋氏|1477|8
@@ -1654,7 +1736,7 @@
 										朱宇溫|唐敬王 文城王|母王妃楊氏|1525|35
 											朱宙栐|唐順王 明順帝|母次妃丁氏|1562|2
 												朱碩熿|唐端王 明端帝|母王妃魏氏|1569|61
-													朱器墭|唐裕王 明宣帝|母楊氏|死於非命
+													朱噐墭|唐裕王 明宣帝|母楊氏|死於非命
 														朱聿鍵|明紹宗 唐王 南陽王|母宣皇后毛氏|1645|2|死於非命|年號 隆武
 															朱琳源|莊敬太子|母孝毅襄皇后曾氏
 														朱聿鏼|唐愍王||1636|5
@@ -1664,14 +1746,14 @@
 														朱聿𨧨|陳愍王|死於非命
 															朱琳渼|陳世子
 													朱某|早夭未名|母徐氏|序齒3
-													朱器塽|福山王|母徐氏|1597|39|序齒5|死於非命
-													朱器埏|清源王|母徐氏|1597|1|序齒6|無嗣
-													朱器埈|安陽王|母徐氏|1599|47|序齒7|死於非命
-													朱器增|寶慶王|母徐氏|1603|1|序齒8
-													朱器培|永興王|母金氏|1599|11|序齒9
+													朱噐塽|福山王|母徐氏|1597|39|序齒5|死於非命
+													朱噐埏|清源王|母徐氏|1597|1|序齒6|無嗣
+													朱噐埈|安陽王|母徐氏|1599|47|序齒7|死於非命
+													朱噐增|寶慶王|母徐氏|1603|1|序齒8
+													朱噐培|永興王|母金氏|1599|11|序齒9
 														朱某|永興王
-													朱器圻|永壽王|母吳氏|1609|36|序齒10|死於非命
-													朱器䵺|鄧王 德安王|母徐氏|1645|1|序齒11|死於非命
+													朱噐圻|永壽王|母吳氏|1609|36|序齒10|死於非命
+													朱噐䵺|鄧王 德安王|母徐氏|1645|1|序齒11|死於非命
 										朱宇潛|鎮國將軍
 										朱宇泓|淅陽奉祀|母王妃楊氏
 										朱宇澤|鎮國將軍
@@ -1692,7 +1774,7 @@
 									朱彌鋠|承休昭毅王||1523|19
 										朱宇淵|承休安僖王||1545|41
 											朱宙枝|承休端惠王
-												朱碩鰾|承休王||1590|序齒2
+												朱碩熛|承休王||1590|序齒2
 								朱芝𤬪|蕩陰昭安王||1473|48
 									朱彌鐶|鎮國將軍
 									朱彌鍔|蕩陰端肅王|母王妃王氏|1524|32
@@ -1727,11 +1809,126 @@
       <p></p>
     </div>
     <svg id="lines" role="img" aria-label="帝系传承连线"></svg>
+    <!-- 《皇明祖訓》字輩譜印章钮（明壳专属；壳尾脚本定位：题识下、方印上、与印同轴） -->
+    <button id="zuxun-seal" type="button" aria-expanded="false" aria-controls="zuxun-panel" title="《皇明祖訓》明太祖諸子字輩譜">諸子字輩</button>
   </div>
   <footer>大明帝系 · 仿宋刻本竖排世系 · 圖示全部宗室（帝者七欄加粗）· 墨線＝父子血親、帝位傳承不畫線（明朝/南明分序，位次見左欄「第N位皇帝」）· 左側代標與虛線行帶為輩分 · 懸停/點擊帝浮现朱色傳位層（點擊釘住）</footer>
 </main>
 
+<!-- 《皇明祖訓》字輩譜浮层（明壳专属，2026-11-08 用户提供谱文）：竖排右起，
+     题首栏＋二十四藩位下＋补诵三章＋靖江王位下；点开自右向左横滚阅览 -->
+<div id="zuxun-panel" role="dialog" aria-modal="false" aria-label="皇明祖訓 明太祖諸子字輩譜" tabindex="-1" hidden>
+  <div class="zux-frame">
+    <div class="zux-scroll">
+      <h2 class="zux-title"><span class="t1">《皇明祖訓》</span><span class="t2">明太祖諸子字輩譜</span></h2>
+      <!-- zuxun-freeze:start —— 以下 28 行谱文冻结（validate.mjs F 节 SHA-256 对勘在册值）；改字须用户先谳，更新 validate.mjs 之 ZUXUN_FREEZE_SHA256 重冻 -->
+      <section class="zux-sec"><h3>東宮位下</h3><p>允文遵祖訓，欽武大君勝，順道宜逢吉，師良善用晟。</p></section>
+      <section class="zux-sec"><h3>秦王位下</h3><p>尚志公誠秉，惟懷敬誼存，輔嗣資廉直，匡時永信惇。</p></section>
+      <section class="zux-sec"><h3>晉王位下</h3><p>濟美鍾奇表，知新慎敏求，審心咸景慕，述學繼前修。</p></section>
+      <section class="zux-sec"><h3>燕王位下</h3><p>高瞻祁見佑，厚載翊常由，慈和怡伯仲，簡靖迪先猷。</p></section>
+      <section class="zux-sec"><h3>周王位下</h3><p>有子同安睦，勤朝在肅恭，紹倫敷惠潤，昭格廣登庸。</p></section>
+      <section class="zux-sec"><h3>楚王位下</h3><p>孟季均榮顯，英華蘊盛容，宏才升博衍，茂士立全功。</p></section>
+      <section class="zux-sec"><h3>齊王位下</h3><p>賢能長可慶，睿知實堪宗，養性期淵雅，寅思復會通。</p></section>
+      <section class="zux-sec"><h3>潭王位下</h3><p>福昌忻保定，嘉應必興隆，啟處詢從式，尊聞汝貴中。</p></section>
+      <section class="zux-sec"><h3>魯王位下</h3><p>肇泰陽當健，觀頤壽以弘，振舉希兼達，康莊遇本寧。</p></section>
+      <section class="zux-sec"><h3>蜀王位下</h3><p>悅友申賓讓，承宣奉至平，懋進深滋益，端居務穆清。</p></section>
+      <section class="zux-sec"><h3>湘王位下</h3><p>久鎮開方岳，揚威謹禮儀，剛毅循超卓，權衡素自持。</p></section>
+      <section class="zux-sec"><h3>代王位下</h3><p>遜仕成聰俊，充廷鼐鼎彝，傳貽連秀郁，炳耀壯洪基。</p></section>
+      <section class="zux-sec"><h3>肅王位下</h3><p>瞻祿貢真弼，縉紳識烈忠，曦暉躋當運，凱諫處恆隆。</p></section>
+      <section class="zux-sec"><h3>遼王位下</h3><p>貴豪恩寵致，憲術儼尊儒，雲仍祺保合，操翰麗龍輿。</p></section>
+      <section class="zux-sec"><h3>慶王位下</h3><p>秩邃寘台鼒，倪伸帥倬奇，适完因巨衎，隲眷發需毗。</p></section>
+      <section class="zux-sec"><h3>寧王位下</h3><p>磐奠覲宸拱，多謀統議中，總添支庶闊，作哲向親衷。</p></section>
+      <section class="zux-sec"><h3>岷王位下</h3><p>徽音膺彥譽，定幹企禋雍，崇理原諮訪，寬鎔喜賁從。</p></section>
+      <section class="zux-sec"><h3>谷王位下</h3><p>賦質僖雄敞，叢興闡福昌，篤諧恂懌豫，擴霽昱禎祥。</p></section>
+      <section class="zux-sec"><h3>韓王位下</h3><p>沖範徵偕旭，融謨朗璟逵，亶韶愉顥慥，令緒价蕃維。</p></section>
+      <section class="zux-sec"><h3>瀋王位下</h3><p>佶幼詮勛胤，恬珵效迴瑝，湜源諲晳暐，圭璧澈澄昂。</p></section>
+      <section class="zux-sec"><h3>安王位下</h3><p>斐序斌廷賞，凝覃濬祉襄，恢嚴顓輯矩，縝密廓程綱。</p></section>
+      <section class="zux-sec"><h3>唐王位下</h3><p>瓊芝彌宇宙，碩噐聿琳琚，啟齡蒙頌體，嘉曆恊銘圖。</p></section>
+      <section class="zux-sec"><h3>郢王位下</h3><p>偉聞參望奭，箴誨洎皐夔，麒麟餘積兆，奎穎曄璿璣。</p></section>
+      <section class="zux-sec"><h3>伊王位下</h3><p>顒勉諟訏典，褒珂采鳳琛，應疇頒胄選，昆玉冠泉金。</p></section>
+      <section class="zux-sec"><p>毖初斯建節，勗好必貞銓。執準符鈞正，詢旼汝勵虔。</p></section>
+      <section class="zux-sec"><p>薦謂演還暢，先施遂省稽。諏懽爰造就，適藝冀塤篪。</p></section>
+      <section class="zux-sec"><p>慧堅忻愿確，鑑潔綽侁孜。習獻增盈謐，臨饒軼績撝。</p></section>
+      <section class="zux-sec"><h3>靖江王位下</h3><p>賛佐相規約，經邦任履亨，若依純一行，遠得襲芳名。</p></section>
+      <!-- zuxun-freeze:end -->
+    </div>
+    <button type="button" class="zux-close" aria-label="收起字輩譜">×</button>
+  </div>
+</div>
+
 <!-- 世系图引擎模块：解析数据块、布局、连线、字体逐字回落、墨洇滤镜注入 -->
-<script src="assets/lineage/lineage.js?v=20261108a"></script>
+<script src="assets/lineage/lineage.js?v=20261108b"></script>
+<!-- 明壳专属脚本：印章钮定位（题识文字实际底缘下 24px、方印平移至钮下、与印同轴）。
+     引擎为异步 IIFE（await 字体就绪方建印/位印，fonts.ready 后复跑 placeSeal），
+     时序不假先后——以 MutationObserver 仲裁：方印 style 遭外写即重排，等值不写
+     自然收敛，终态恒「钮上印下」；方印挂板前钮藏（visibility）。＋浮层开合
+     （钮/收钮/罩/Esc 四路，焦点开入收钮、归还印章钮）＋滚轮纵转横 -->
+<script>
+(function () {
+  var board = document.getElementById("board");
+  var heading = document.getElementById("heading");
+  var sealBtn = document.getElementById("zuxun-seal");
+  var panel = document.getElementById("zuxun-panel");
+  if (!board || !heading || !sealBtn || !panel) return;
+  var closeBtn = panel.querySelector(".zux-close");
+  var scroll = panel.querySelector(".zux-scroll");
+  var GAP = 24, BW = 60, BH = 124;   /* 与 CSS #zuxun-seal 宽高同值 */
+  var mo = null;
+
+  function set(el, prop, v) {
+    var s = v + "px";
+    if (el.style[prop] !== s) el.style[prop] = s;   /* 等值不写：断观察自激 */
+  }
+  function place() {
+    if (mo) mo.disconnect();
+    var seal = board.querySelector(".seal");
+    if (seal || heading.querySelector("h1").textContent) sealBtn.style.visibility = "visible";
+    var scale = (sealBtn.getBoundingClientRect().width / sealBtn.offsetWidth) || 1;
+    var hb = heading.getBoundingClientRect();
+    var rr = document.createRange();
+    rr.selectNodeContents(heading);
+    var textBottom = heading.offsetTop + (rr.getBoundingClientRect().bottom - hb.top) / scale;
+    set(sealBtn, "top", textBottom + GAP);
+    mo = new MutationObserver(onWrite);
+    if (seal) {
+      set(sealBtn, "left", seal.offsetLeft + (100 - BW) / 2);    /* 与方印同轴 */
+      set(seal, "top", textBottom + GAP + BH + GAP);             /* 印让位钮下 */
+      mo.observe(seal, { attributes: true, attributeFilter: ["style"] });
+    } else {
+      set(sealBtn, "left", heading.offsetLeft + (130 - BW) / 2);
+      mo.observe(board, { childList: true, subtree: true });     /* 候方印挂板 */
+    }
+  }
+  function onWrite() {
+    if (!board.querySelector(".seal")) return;   /* 候印期引擎逐节点追加，不重排 */
+    place();
+  }
+  place();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(place);
+
+  function openPanel() {
+    panel.hidden = false;
+    sealBtn.setAttribute("aria-expanded", "true");
+    closeBtn.focus();
+  }
+  function closePanel() {
+    panel.hidden = true;
+    sealBtn.setAttribute("aria-expanded", "false");
+    sealBtn.focus();
+  }
+  sealBtn.addEventListener("click", function () { panel.hidden ? openPanel() : closePanel(); });
+  closeBtn.addEventListener("click", closePanel);
+  panel.addEventListener("click", function (e) { if (e.target === panel) closePanel(); });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && !panel.hidden) closePanel();
+  });
+  /* 竖排卷轴：纵滚轮映射为横滚（块轴右起左进，deltaY 正＝向左阅后章） */
+  scroll.addEventListener("wheel", function (e) {
+    if (!e.deltaY) return;
+    e.preventDefault();
+    scroll.scrollLeft -= e.deltaY;
+  }, { passive: false });
+})();
+</script>
 </body>
 </html>
