@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>大明帝系</title>
 <!-- 世系图视觉模块：纸纹背景、版框书口、墨洇、节点栏样式与几何令牌 -->
-<link rel="stylesheet" href="assets/lineage/lineage.css?v=20261108b">
+<link rel="stylesheet" href="assets/lineage/lineage.css?v=20261110a">
 <!-- ══ 明壳专属：《皇明祖訓》字輩譜（2026-11-08 用户定谳：印章钮＋浮层面板）══
      印章钮在板内纸上：题识文字底缘之下、方印之上、与印同轴（壳尾脚本定位，
      布局 px 与方印 100px 同单位——桌面随根 zoom 视观减半，正与题识/印同缩）；
@@ -16,8 +16,9 @@
   #zuxun-seal {
     position: absolute; z-index: 2;   /* 顶/左由壳尾脚本量题识底缘后写行内 */
     visibility: hidden;               /* 引擎异步引导：方印挂板定位后壳尾脚本方显，防题识空时瞬跳 */
-    width: 60px; height: 124px; box-sizing: border-box;   /* 長方印：四字单列 */
-    display: flex; align-items: center; justify-content: center;
+    width: 84px; height: 84px; box-sizing: border-box;   /* 方印：四字两列，右起 諸子｜字輩 */
+    display: flex; flex-direction: column; gap: 4px; align-items: center; justify-content: center;
+    /* vertical-rl 下 column 主轴＝块轴＝右而左，两 span 自右向左排列 */
     writing-mode: vertical-rl; text-orientation: upright;
     font-family: inherit; font-size: 26px; font-weight: 700;
     letter-spacing: .1em; line-height: 1;
@@ -257,6 +258,7 @@
 @fief=吳藩|朱允熥|吳藩,興宗胤,首封嫡三子朱允熥,建文元年封,封國杭州府(今浙江省杭州市上城區),未就藩,建文四年降封國除。
 @fief=秦藩|朱樉|秦藩,太祖胤,首封嫡二子朱樉,洪武三年封,封國西安府(今陝西省西安市新城區),洪武十一年就藩,明亡國除。
 @fief=晉藩|朱棡|晉藩,太祖胤,首封嫡三子朱棡,洪武三年封,封國太原府(今山西省太原市杏花嶺區),洪武十一年就藩,明亡國除。
+@fief=燕藩|朱棣|燕藩,太祖胤,首封庶四子朱棣,洪武三年封,封國北平府(今北京市東城區),洪武十一年就藩,建文四年承嗣大統國除。
 @fief=漢藩|朱高煦|漢藩,成祖胤,首封嫡二子朱高煦,永樂二年封,封國樂安州(今山東省濱州市惠民縣),永樂十五年就藩,宣德元年謀反國除。
 @fief=趙藩|朱高燧|趙藩,成祖胤,首封嫡三子朱高燧,永樂二年封,封國彰德府(今河南省安陽市文峰區),洪熙元年就藩,明亡國除。
 @fief=鄭藩|朱瞻埈|鄭藩,仁宗胤,首封庶二子朱瞻埈,永樂二十二年封,封國鳳翔府(今陝西省寶雞市鳳翔區),宣德四年就藩,正統九年移懷慶府(今河南省焦作市沁陽市),明亡國除。
@@ -833,7 +835,14 @@
 																朱存梧|永壽王||1649|7
 												朱惟燱|鎮國將軍|母王妃邵氏|序齒6
 							朱尚炌|安定王||1402|17
-						朱棡|晉恭王|母孝慈高皇后馬氏
+						朱棡|晉恭王|母孝慈高皇后馬氏|1370|28
+							朱济熺|晋定王|母王妃谢氏|1398|16
+							朱济烨|高平怀简王|母王妃梅氏|1402|5|無嗣
+							朱济熿|晋王 平阳王 昭德王|母王妃梅氏|1414|13|死於非命
+							朱济炫|庆成庄惠王|母苏氏|1403|26
+							朱济焕|宁化懿简王|母夫人樊氏|1404|46
+							朱济烺|永和昭定王|母刘氏|1403|40
+							朱济熇|广昌悼平王|母次妃刘氏|1402|25
 						朱棣|明成祖|母碽妃|1402|22|年號 永樂
 							朱高熾|明仁宗|母仁孝文皇后徐氏|1424|9月|年號 洪熙
 								朱瞻基|明宣宗|母誠孝昭皇后張氏|1425|10|年號 宣德
@@ -1810,7 +1819,7 @@
     </div>
     <svg id="lines" role="img" aria-label="帝系传承连线"></svg>
     <!-- 《皇明祖訓》字輩譜印章钮（明壳专属；壳尾脚本定位：题识下、方印上、与印同轴） -->
-    <button id="zuxun-seal" type="button" aria-expanded="false" aria-controls="zuxun-panel" title="《皇明祖訓》明太祖諸子字輩譜">諸子字輩</button>
+    <button id="zuxun-seal" type="button" aria-expanded="false" aria-controls="zuxun-panel" title="《皇明祖訓》明太祖諸子字輩譜"><span>諸子</span><span>字輩</span></button>
   </div>
   <footer>大明帝系 · 仿宋刻本竖排世系 · 圖示全部宗室（帝者七欄加粗）· 墨線＝父子血親、帝位傳承不畫線（明朝/南明分序，位次見左欄「第N位皇帝」）· 左側代標與虛線行帶為輩分 · 懸停/點擊帝浮现朱色傳位層（點擊釘住）</footer>
 </main>
@@ -1857,7 +1866,7 @@
 </div>
 
 <!-- 世系图引擎模块：解析数据块、布局、连线、字体逐字回落、墨洇滤镜注入 -->
-<script src="assets/lineage/lineage.js?v=20261108b"></script>
+<script src="assets/lineage/lineage.js?v=20261110a"></script>
 <!-- 明壳专属脚本：印章钮定位（题识文字实际底缘下 24px、方印平移至钮下、与印同轴）。
      引擎为异步 IIFE（await 字体就绪方建印/位印，fonts.ready 后复跑 placeSeal），
      时序不假先后——以 MutationObserver 仲裁：方印 style 遭外写即重排，等值不写
@@ -1872,7 +1881,7 @@
   if (!board || !heading || !sealBtn || !panel) return;
   var closeBtn = panel.querySelector(".zux-close");
   var scroll = panel.querySelector(".zux-scroll");
-  var GAP = 24, BW = 60, BH = 124;   /* 与 CSS #zuxun-seal 宽高同值 */
+  var GAP = 24, BW = 84, BH = 84;   /* 与 CSS #zuxun-seal 宽高同值 */
   var mo = null;
 
   function set(el, prop, v) {
